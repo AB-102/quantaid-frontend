@@ -9,12 +9,12 @@ import { useAuth } from '@/AuthContext';
 import { styles } from './LoginStyles';
 import LoginForm from './LoginForm';
 import SignupForm from './SignupForm';
-import api from '@/api';
+import api, { BACKEND_URL } from '@/api';
 
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login: authLogin } = useAuth();
+  const { login: authLogin, riceSsoEnabled, googleSsoEnabled, emailPasswordEnabled } = useAuth();
 
 
   // State to track if user is signing up (true) or logging in (false)
@@ -339,127 +339,158 @@ const Login: React.FC = () => {
               <h1 style={styles.welcomeTitle}>Welcome back!</h1>
             )}
             
-            {/* Sign up/Continue with Google */}
-            <button
-              ref={googleButtonRef}
-              style={styles.googleButton}
-              onClick={() => login()}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#DFE1E3';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#F2F2F2';
-              }}
-              aria-label={isSignUpMode ? 'Sign up with Google' : 'Continue with Google'}
-            >
-              <img src={GoogleIcon} alt="" style={styles.googleIcon} aria-hidden="true" />
-              <span>{isSignUpMode ? 'Sign up with Google' : 'Continue with Google'}</span>
-            </button>
-            
-            {/* Divider */}
-            <div style={styles.divider} aria-hidden="true">
-              <div style={styles.line} />
-              <span style={styles.dividerText}>OR</span>
-              <div style={styles.line} />
-            </div>
-            
-            {/* Manual signup fields */}
-            <form 
-              onSubmit={(e) => {
-                e.preventDefault();
-                void handleManualSignupOrLogin();
-              }}
-              onKeyDown={handleFormKeyDown}
-            >
-            {isSignUpMode ? (
-              <SignupForm
-                email={email}
-                fullName={fullName}
-                password={password}
-                onEmailChange={setEmail}
-                onNameChange={setFullName}
-                onPasswordChange={setPassword}
-                emailInputRef={emailInputRef}
-                nameInputRef={nameInputRef}
-                passwordInputRef={passwordInputRef}
-              />
-            ) : (
-              <LoginForm
-                email={email}
-                password={password}
-                onEmailChange={setEmail}
-                onPasswordChange={setPassword}
-                emailInputRef={emailInputRef}
-                passwordInputRef={passwordInputRef}
-                forgotCooldown={forgotCooldown}
-                onForgotPassword={() => { void handleForgotPassword(); }}
-              />
+            {/* Rice University SSO — only shown when backend has Rice OIDC configured */}
+            {riceSsoEnabled && (
+              <>
+                <button
+                  style={{
+                    ...styles.googleButton,
+                    backgroundColor: '#00205B',
+                    color: '#FFFFFF',
+                    border: '1px solid #003594',
+                  }}
+                  onClick={() => { window.location.href = `${BACKEND_URL}/auth/rice/login`; }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#003594';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#00205B';
+                  }}
+                  aria-label="Sign in with Rice University NetID"
+                >
+                  <span>I'm a Rice Student</span>
+                </button>
+
+                {googleSsoEnabled && (
+                  <div style={styles.divider} aria-hidden="true">
+                    <div style={styles.line} />
+                    <span style={styles.dividerText}>OR</span>
+                    <div style={styles.line} />
+                  </div>
+                )}
+              </>
             )}
-            
-            {/* Error/success messages */}
-            {formError && <p style={styles.formError} role="alert">{formError}</p>}
-            {formMessage && <p style={styles.formMessage} role="status">{formMessage}</p>}
 
-            {/* Sign Up/Log In Button */}
-            <button
-              ref={submitButtonRef}
-              type="submit"
-              disabled={isLoading}
-              style={{
-                ...styles.signupButton,
-                opacity: isLoading ? 0.6 : 1,
-                cursor: isLoading ? 'default' : 'pointer',
-              }}
-              onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#1F4ADB'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#2C5CE6'; }}
-              aria-describedby={isSignUpMode ? "terms-text" : undefined}
-            >
-              {isLoading ? (isSignUpMode ? 'SIGNING UP...' : 'LOGGING IN...') : (isSignUpMode ? 'SIGN UP' : 'LOG IN')}
-            </button>
-            </form>
+            {/* Sign up/Continue with Google */}
+            {googleSsoEnabled && (
+              <button
+                ref={googleButtonRef}
+                style={styles.googleButton}
+                onClick={() => login()}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#DFE1E3';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#F2F2F2';
+                }}
+                aria-label={isSignUpMode ? 'Sign up with Google' : 'Continue with Google'}
+              >
+                <img src={GoogleIcon} alt="" style={styles.googleIcon} aria-hidden="true" />
+                <span>{isSignUpMode ? 'Sign up with Google' : 'Continue with Google'}</span>
+              </button>
+            )}
 
-            {/* Toggle between sign up and log in */}
-            <p style={styles.loginLink}>
-              {isSignUpMode ? (
-                <>
-                  Already have an account?{' '}
-                  <button 
-                    type="button"
-                    onClick={toggleMode}
-                    style={styles.toggleButton}
-                    className="text-button"
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.textDecoration = 'underline';
+            {/* Email/password form */}
+            {emailPasswordEnabled && (
+              <>
+                {(riceSsoEnabled || googleSsoEnabled) && (
+                  <div style={styles.divider} aria-hidden="true">
+                    <div style={styles.line} />
+                    <span style={styles.dividerText}>OR</span>
+                    <div style={styles.line} />
+                  </div>
+                )}
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void handleManualSignupOrLogin();
+                  }}
+                  onKeyDown={handleFormKeyDown}
+                >
+                  {isSignUpMode ? (
+                    <SignupForm
+                      email={email}
+                      fullName={fullName}
+                      password={password}
+                      onEmailChange={setEmail}
+                      onNameChange={setFullName}
+                      onPasswordChange={setPassword}
+                      emailInputRef={emailInputRef}
+                      nameInputRef={nameInputRef}
+                      passwordInputRef={passwordInputRef}
+                    />
+                  ) : (
+                    <LoginForm
+                      email={email}
+                      password={password}
+                      onEmailChange={setEmail}
+                      onPasswordChange={setPassword}
+                      emailInputRef={emailInputRef}
+                      passwordInputRef={passwordInputRef}
+                      forgotCooldown={forgotCooldown}
+                      onForgotPassword={() => { void handleForgotPassword(); }}
+                    />
+                  )}
+
+                  {/* Error/success messages */}
+                  {formError && <p style={styles.formError} role="alert">{formError}</p>}
+                  {formMessage && <p style={styles.formMessage} role="status">{formMessage}</p>}
+
+                  {/* Sign Up/Log In Button */}
+                  <button
+                    ref={submitButtonRef}
+                    type="submit"
+                    disabled={isLoading}
+                    style={{
+                      ...styles.signupButton,
+                      opacity: isLoading ? 0.6 : 1,
+                      cursor: isLoading ? 'default' : 'pointer',
                     }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.textDecoration = 'none';
-                    }}
-                    aria-label="Switch to login mode"
+                    onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#1F4ADB'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#2C5CE6'; }}
+                    aria-describedby={isSignUpMode ? "terms-text" : undefined}
                   >
-                    Log in
+                    {isLoading ? (isSignUpMode ? 'SIGNING UP...' : 'LOGGING IN...') : (isSignUpMode ? 'SIGN UP' : 'LOG IN')}
                   </button>
-                </>
-              ) : (
-                <>
-                  Don't have an account?{' '}
-                  <button 
-                    type="button"
-                    onClick={toggleMode}
-                    style={styles.toggleButton}
-                    className="text-button"
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.textDecoration = 'underline';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.textDecoration = 'none';
-                    }}
-                    aria-label="Switch to sign up mode"
-                  >
-                    Sign up
-                  </button>
-                </>
-              )}
-            </p>
+                </form>
+
+                {/* Toggle between sign up and log in */}
+                <p style={styles.loginLink}>
+                  {isSignUpMode ? (
+                    <>
+                      Already have an account?{' '}
+                      <button
+                        type="button"
+                        onClick={toggleMode}
+                        style={styles.toggleButton}
+                        className="text-button"
+                        onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
+                        aria-label="Switch to login mode"
+                      >
+                        Log in
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      Don't have an account?{' '}
+                      <button
+                        type="button"
+                        onClick={toggleMode}
+                        style={styles.toggleButton}
+                        className="text-button"
+                        onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
+                        aria-label="Switch to sign up mode"
+                      >
+                        Sign up
+                      </button>
+                    </>
+                  )}
+                </p>
+              </>
+            )}
           </div>
         </main>
         

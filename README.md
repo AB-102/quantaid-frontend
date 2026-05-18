@@ -8,13 +8,13 @@ React + TypeScript + Vite frontend for the Quantaid learning platform. Quantaid 
 
 ## Backend
 
-This app communicates with the [Flask-based backend](https://github.com/kevvinnnh/QuantumAiEdBackEnd) at the URL defined in `VITE_BACKEND_URL`. Be sure the backend is running locally on port `5000` or update the value accordingly.
+This app communicates with the [Flask-based backend](https://github.com/AB-102/quantaid-backend) at the URL defined in `VITE_BACKEND_URL`. Be sure the backend is running locally on port `5000` or update the value accordingly.
 
 ## Development
 
 ```bash
-git clone https://github.com/kevvinnnh/QuantumAiEdFrontEnd.git
-cd QuantumAiEdFrontEnd/frontend
+git clone https://github.com/AB-102/quantaid-frontend.git
+cd quantaid-frontend/frontend
 npm install
 cp .env.example .env  # Fill in the necessary keys in .env
 npm run dev           # Start dev server with HMR

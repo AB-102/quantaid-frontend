@@ -6,6 +6,9 @@ interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
   userEmail: string | null;
+  riceSsoEnabled: boolean;
+  googleSsoEnabled: boolean;
+  emailPasswordEnabled: boolean;
   loading: boolean;
   login: (email: string, isAdmin: boolean) => void;
   logout: () => Promise<void>;
@@ -15,6 +18,9 @@ const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
   isAdmin: false,
   userEmail: null,
+  riceSsoEnabled: false,
+  googleSsoEnabled: false,
+  emailPasswordEnabled: false,
   loading: true,
   login: () => {},
   logout: async () => {},
@@ -26,6 +32,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [riceSsoEnabled, setRiceSsoEnabled] = useState(false);
+  const [googleSsoEnabled, setGoogleSsoEnabled] = useState(false);
+  const [emailPasswordEnabled, setEmailPasswordEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,8 +43,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const res = await api.get('/auth/check');
         const data = res.data;
         setIsLoggedIn(data.authenticated);
-        setIsAdmin(data.is_admin);
-        setUserEmail(data.email);
+        setIsAdmin(data.is_admin ?? false);
+        setUserEmail(data.email ?? null);
+        setRiceSsoEnabled(data.rice_sso_enabled ?? false);
+        setGoogleSsoEnabled(data.google_sso_enabled ?? false);
+        setEmailPasswordEnabled(data.email_password_enabled ?? false);
       } catch {
         setIsLoggedIn(false);
         setIsAdmin(false);
@@ -76,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, isAdmin, userEmail, loading, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, isAdmin, userEmail, riceSsoEnabled, googleSsoEnabled, emailPasswordEnabled, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
