@@ -1,14 +1,12 @@
 // src/components/Profile.tsx — Profile Settings Modal
 
 import React, { useEffect, useRef, useState, useCallback, ChangeEvent } from 'react';
-import axios from 'axios';
 import { IoMdClose } from 'react-icons/io';
 import api, { BACKEND_URL } from '@/api';
 import { highSchoolLevels, collegeLevels, subjects } from '@/constants/formOptions';
 import { styles } from './ProfileStyles';
 import ProfilePictureUpload from './ProfilePictureUpload';
 import ProfileFormFields from './ProfileFormFields';
-import PasswordChangeSection from './PasswordChangeSection';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -29,8 +27,6 @@ interface ProfileData {
   favoriteHobbies: string[];
   customHobbies: string;
   hobbyPersonalization: boolean;
-  hasPassword: boolean;
-  hasGoogle: boolean;
 }
 
 const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, userName: propName, userPicture: propPicture }) => {
@@ -46,20 +42,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, userName: 
     favoriteHobbies: [],
     customHobbies: '',
     hobbyPersonalization: true,
-    hasPassword: false,
-    hasGoogle: false,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
-
-  // Change password state
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordMessage, setPasswordMessage] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [changingPassword, setChangingPassword] = useState(false);
 
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -136,8 +122,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, userName: 
           favoriteHobbies: d.favoriteHobbies || [],
           customHobbies: d.customHobbies || '',
           hobbyPersonalization: d.hobbyPersonalization !== false,
-          hasPassword: d.hasPassword || false,
-          hasGoogle: d.hasGoogle || false,
         });
       })
       .catch(() => { /* Profile may not be complete yet */ })
@@ -223,46 +207,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, userName: 
     });
   };
 
-  const handleChangePassword = async () => {
-    setPasswordError('');
-    setPasswordMessage('');
-
-    if (data.hasPassword && !currentPassword) {
-      setPasswordError('Current password is required.');
-      return;
-    }
-    if (newPassword.length < 8) {
-      setPasswordError('New password must be at least 8 characters.');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPasswordError('Passwords do not match.');
-      return;
-    }
-
-    setChangingPassword(true);
-    try {
-      const payload: Record<string, string> = { new_password: newPassword };
-      if (data.hasPassword) payload.current_password = currentPassword;
-      const res = await api.post('/auth/change-password', payload, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-      setPasswordMessage(res.data.message);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setData(d => ({ ...d, hasPassword: true }));
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err) && err.response?.data?.error) {
-        setPasswordError(err.response.data.error);
-      } else {
-        setPasswordError('An error occurred. Please try again.');
-      }
-    } finally {
-      setChangingPassword(false);
-    }
-  };
-
   const handleSave = () => {
     setSaving(true);
     setSaveMessage('');
@@ -341,29 +285,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, userName: 
               onCustomHobbiesChange={(val) => setData(d => ({ ...d, customHobbies: val }))}
               onHobbyPersonalizationToggle={() => setData(d => ({ ...d, hobbyPersonalization: !d.hobbyPersonalization }))}
             />
-
-            <PasswordChangeSection
-              hasPassword={data.hasPassword}
-              hasGoogle={data.hasGoogle}
-              currentPassword={currentPassword}
-              newPassword={newPassword}
-              confirmPassword={confirmPassword}
-              passwordError={passwordError}
-              passwordMessage={passwordMessage}
-              changingPassword={changingPassword}
-              onCurrentPasswordChange={setCurrentPassword}
-              onNewPasswordChange={setNewPassword}
-              onConfirmPasswordChange={setConfirmPassword}
-              onChangePassword={() => { void handleChangePassword(); }}
-            />
-
-            {/* Auth methods info */}
-            <div style={{ marginBottom: 28, fontSize: 13, color: '#6B7280', fontFamily: "'Inter', sans-serif" }}>
-              <span>Linked sign-in methods: </span>
-              {data.hasGoogle && <span style={{ color: '#4ade80', marginRight: 8 }}>Google</span>}
-              {data.hasPassword && <span style={{ color: '#60a5fa' }}>Email/Password</span>}
-              {!data.hasGoogle && !data.hasPassword && <span>None</span>}
-            </div>
 
             {/* Save */}
             <div style={styles.saveSection}>

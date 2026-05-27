@@ -21,7 +21,7 @@ export function setUnauthorizedHandler(handler: () => void) {
 
 // Paths that should NOT trigger global logout on 401
 // (auth endpoints where 401 is expected behavior, not a session expiry)
-const AUTH_PATHS = ['/auth/login', '/auth/signup', '/auth/check', '/auth/reset-password', '/auth/forgot-password', '/auth/change-password'];
+const AUTH_PATHS = ['/auth/check'];
 
 api.interceptors.response.use(
   response => response,

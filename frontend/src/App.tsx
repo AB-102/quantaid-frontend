@@ -22,7 +22,6 @@ import ProfileCreation from './components/profile/ProfileCreation';
 import Dashboard from './components/dashboard/Dashboard';
 import Quiz from './components/quiz/Quiz';
 import AdminDashboard from './components/admin/AdminDashboard';
-import ResetPassword from './components/auth/ResetPassword';
 import api from './api';
 import type { Question } from './types/quiz';
 import { AuthProvider, ProtectedRoute, AdminRoute, AdminToggle } from './AuthContext';
@@ -65,7 +64,6 @@ const App: React.FC = () => {
         <div className="app-container">
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile-creation" element={<ProtectedRoute><ProfileCreation /></ProtectedRoute>} />
             <Route path="/map" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/quiz/:courseId" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
