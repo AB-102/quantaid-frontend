@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState, useCallback, ChangeEvent } from 're
 import { IoMdClose } from 'react-icons/io';
 import api, { BACKEND_URL } from '@/api';
 import { highSchoolLevels, collegeLevels, subjects } from '@/constants/formOptions';
-import { styles } from './ProfileStyles';
 import ProfilePictureUpload from './ProfilePictureUpload';
 import ProfileFormFields from './ProfileFormFields';
 
@@ -240,24 +239,32 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, userName: 
     : '';
 
   return (
-    <div style={styles.overlay} onClick={onClose}>
+    <div className="
+      fixed inset-0 z-9999 flex items-center justify-center bg-black/60
+    " onClick={onClose}>
       <div
         ref={modalRef}
-        style={styles.modal}
+        className="
+          relative flex max-h-[85vh] w-150 max-w-[90vw] flex-col overflow-hidden
+          rounded-2xl bg-brand-navy shadow-[0_15px_30px_rgba(0,0,0,0.5)]
+        "
         onClick={e => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Profile settings"
       >
         {/* Close button */}
-        <button onClick={onClose} style={styles.closeBtn} aria-label="Close">
+        <button onClick={onClose} className="
+          absolute top-4 right-4 z-10 flex cursor-pointer items-center
+          justify-center border-none bg-transparent p-1
+        " aria-label="Close">
           <IoMdClose size={22} color="#AAAAC1" />
         </button>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#AAAAC1' }}>Loading...</div>
+          <div className="p-10 text-center text-brand-cool">Loading...</div>
         ) : (
-          <div style={styles.content}>
+          <div className="overflow-y-auto px-9 py-8">
             {/* Header: Avatar + Greeting */}
             <ProfilePictureUpload
               picSrc={picSrc}
@@ -265,7 +272,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, userName: 
               onPictureChange={handlePicture}
             />
 
-            <h2 style={styles.greeting}>Welcome back, {firstName}!</h2>
+            <h2 className="
+              mt-2 mb-7 text-center font-inter text-2xl font-normal
+              tracking-[.02em] text-white
+            ">Welcome back, {firstName}!</h2>
 
             <ProfileFormFields
               educationCategory={data.educationCategory}
@@ -287,15 +297,19 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, userName: 
             />
 
             {/* Save */}
-            <div style={styles.saveSection}>
-              <button onClick={handleSave} disabled={saving} style={styles.saveBtn}>
+            <div className="mt-2 flex flex-col items-center pb-2">
+              <button onClick={handleSave} disabled={saving} className="
+                cursor-pointer rounded-xl border-none bg-brand-deep px-10 py-3
+                font-inter text-base font-medium text-white transition-all
+                duration-200
+              ">
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>
               {saveMessage && (
-                <p style={{
-                  ...styles.saveMessage,
-                  color: saveMessage.includes('failed') ? '#ff6b6b' : '#4ade80',
-                }}>
+                <p
+                  className="mt-2.5 font-inter text-sm"
+                  style={{ color: saveMessage.includes('failed') ? '#ff6b6b' : '#4ade80' }}
+                >
                   {saveMessage}
                 </p>
               )}

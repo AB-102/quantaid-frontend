@@ -30,7 +30,7 @@ window.AudioContext = vi.fn().mockImplementation(() => ({
   }),
   destination: {},
   currentTime: 0,
-})) as unknown as typeof AudioContext
+}))
 
 // Mock window.getSelection (used by Dashboard highlight feature)
 window.getSelection = vi.fn().mockReturnValue({
@@ -40,14 +40,14 @@ window.getSelection = vi.fn().mockReturnValue({
 
 // Mock Element.scrollTo (not implemented in jsdom)
 Element.prototype.scrollTo = vi.fn()
-window.scrollTo = vi.fn() as unknown as typeof window.scrollTo
+window.scrollTo = vi.fn()
 
 // Mock IntersectionObserver (not available in jsdom)
 window.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-})) as unknown as typeof IntersectionObserver
+}))
 
 // Mock ResizeObserver (not available in jsdom)
 class MockResizeObserver {
@@ -56,4 +56,4 @@ class MockResizeObserver {
   disconnect = vi.fn()
   constructor(_callback: ResizeObserverCallback) {}
 }
-window.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver
+window.ResizeObserver = MockResizeObserver

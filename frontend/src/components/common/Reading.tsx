@@ -66,6 +66,12 @@ const ImageBlock: React.FC<{ block: ContentBlock }> = ({ block }) => {
   );
 };
 
+const blockClassName = (type: ContentBlock['type']): string => {
+  if (type === 'heading')    return 'text-[1.4rem] font-semibold tracking-[0.75px] mt-8 mb-4';
+  if (type === 'subheading') return 'text-[1.2rem] font-medium tracking-[0.75px] mt-6 mb-3';
+  return 'mb-6'; // paragraph
+};
+
 const Reading: React.FC<Props> = ({
   courseId = 0,
   onExplainRequest,
@@ -104,27 +110,20 @@ const Reading: React.FC<Props> = ({
       }
 
       const text = block.text || '';
-      let elementStyle = styles.paragraph;
-      let Element: keyof React.JSX.IntrinsicElements = 'p';
+      const className = blockClassName(block.type);
 
-      if (block.type === 'heading') {
-        elementStyle = styles.heading;
-        Element = 'h3';
-      } else if (block.type === 'subheading') {
-        elementStyle = styles.subheading;
-        Element = 'h4';
-      }
-
-      return <Element key={idx} style={elementStyle}>{text}</Element>;
+      if (block.type === 'heading')    return <h3 key={idx} className={className}>{text}</h3>;
+      if (block.type === 'subheading') return <h4 key={idx} className={className}>{text}</h4>;
+      return <p key={idx} className={className}>{text}</p>;
     });
   }, [apiLesson]);
 
   if (!fetchAttempted) {
-    return <p style={{ color: '#aab4c8' }}>Loading lesson...</p>;
+    return <p className="text-[#aab4c8]">Loading lesson...</p>;
   }
 
   if (fetchError || !apiLesson) {
-    return <p style={{ color: '#f87171' }}>Lesson content is temporarily unavailable.</p>;
+    return <p className="text-[#f87171]">Lesson content is temporarily unavailable.</p>;
   }
 
   return (
@@ -132,66 +131,14 @@ const Reading: React.FC<Props> = ({
       onExplain={onExplainRequest}
       onViewAnalogy={onViewAnalogy}
     >
-      <div style={styles.readingBox}>
+      <div className="
+        cursor-text bg-transparent font-inter text-base leading-[1.2]
+        font-normal text-white
+      ">
         {renderedContent}
       </div>
     </HighlightableInstructionsForReading>
   );
-};
-
-const styles: { [k: string]: React.CSSProperties } = {
-  readingBox: {
-    background: 'transparent',
-    color: '#FFFFFF',
-    fontSize: '16px',
-    fontWeight: '400',
-    fontFamily: "'Inter', sans-serif",
-    lineHeight: 1.2,
-    cursor: 'text',
-  },
-  paragraph: {
-    marginBottom: '24px',
-  },
-  heading: {
-    fontSize: '1.4rem',
-    fontWeight: 600,
-    letterSpacing: '0.75px',
-    marginTop: '32px',
-    marginBottom: '16px',
-  },
-  subheading: {
-    fontSize: '1.2rem',
-    fontWeight: 500,
-    letterSpacing: '0.75px',
-    marginTop: '24px',
-    marginBottom: '12px',
-  },
-  title: {
-    color: '#FFFFFF',
-    marginTop: 0,
-    marginBottom: 16,
-  },
-  interactive: {
-    position: 'relative',
-    display: 'inline-block',
-    color: '#a4c8ff',
-    cursor: 'default',
-    textDecoration: 'underline dashed',
-    fontWeight: 600,
-  },
-  tooltip: {
-    position: 'absolute',
-    bottom: '100%',
-    left: 0,
-    marginBottom: 6,
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    color: '#fff',
-    padding: '6px 8px',
-    borderRadius: 4,
-    whiteSpace: 'normal',
-    width: 200,
-    zIndex: 1000,
-  },
 };
 
 export default Reading;

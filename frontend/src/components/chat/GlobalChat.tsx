@@ -7,22 +7,6 @@ import api from '@/api';
 const MAX_STORED_MESSAGES = 50;
 const STORAGE_PREFIX = 'quantaid:chat:';
 
-import { colors as baseColors } from '@/constants/theme';
-
-const colors = {
-  ...baseColors,
-  // Chat-specific overrides and additions
-  primary: '#566395',
-  border: '#424E62',
-  chatBackground: '#181F31',
-  userMessageBg: '#2F3D68',
-  assistantMessageBg: '#181F31',
-  buttonBackground: '#7B99C9',
-  inputBackground: '#2A2E46',
-  loadingSpinner: '#FFC107',
-  dangerRed: '#e74c3c',
-};
-
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -375,12 +359,9 @@ const GlobalChat: React.FC<Props> = ({
   };
 
   const getContainerStyles = (): React.CSSProperties => ({
-    ...styles.container,
     width: width,
     transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
     transition: `transform ${animationDuration}ms ${animationEasing}`,
-    backfaceVisibility: 'hidden',
-    willChange: 'transform',
   });
 
   const formatSessionDate = (timestamp: number): string => {
@@ -410,470 +391,259 @@ const GlobalChat: React.FC<Props> = ({
     .sort((a, b) => b.timestamp - a.timestamp);
 
   return (
-    <>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    <div
+      ref={containerRef}
+      style={getContainerStyles()}
+      className="
+        global-chat-coordinated fixed inset-y-0 right-0 z-2000 flex h-full
+        max-w-150 min-w-75 shrink-0 flex-col bg-brand-dark-panel text-white
+        shadow-[0_0_10px_rgba(0,0,0,0.4)]
+      "
+    >
+      {isOpen && (
+        <div
+          onMouseDown={handleResizeStart}
+          className="
+            resizer absolute inset-y-0 left-0 z-1 w-1 cursor-ew-resize
+            bg-transparent transition-[background-color] duration-150
+          "
+        />
+      )}
 
-      <div ref={containerRef} style={getContainerStyles()} className="global-chat-coordinated">
-        {isOpen && (
-          <div
-            style={styles.resizer}
-            onMouseDown={handleResizeStart}
-            className="resizer"
-          />
-        )}
-
-        <div style={styles.header}>
-          {showHistory ? (
-            <>
-              <button
-                style={styles.historyBtn}
-                onClick={() => setShowHistory(false)}
-                aria-label="Back to chat"
-                className="global-chat-icon-btn"
-              >
-                <MdArrowBack size={24} />
-              </button>
-              <span style={styles.headerTitle}>Chat History</span>
-              <button
-                style={styles.closeBtn}
-                onClick={onClose}
-                aria-label="Close"
-                className="global-chat-icon-btn"
-              >
-                <MdClose size={24} />
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                style={styles.historyBtn}
-                onClick={handleChatHistoryClick}
-                aria-label="Chat History"
-                className="global-chat-icon-btn"
-              >
-                <MdHistory size={24} />
-              </button>
-              <button
-                style={styles.closeBtn}
-                onClick={onClose}
-                aria-label="Close"
-                className="global-chat-icon-btn"
-              >
-                <MdClose size={24} />
-              </button>
-            </>
-          )}
-        </div>
-
+      <div className="
+        flex shrink-0 items-center justify-end bg-brand-dark-panel px-5 py-3
+      ">
         {showHistory ? (
-          <div style={styles.historyPanel}>
+          <>
             <button
-              style={styles.newChatBtn}
-              onClick={handleNewChat}
-              className="global-chat-new-chat-btn"
+              onClick={() => setShowHistory(false)}
+              aria-label="Back to chat"
+              className="
+                global-chat-icon-btn cursor-pointer border-none bg-transparent
+                px-1 py-0 leading-none text-white transition-[color]
+                duration-200
+              "
             >
-              + New Chat
+              <MdArrowBack size={24} />
             </button>
-
-            {pastSessions.length === 0 ? (
-              <div style={styles.placeholder}>
-                No previous conversations for this lesson.
-              </div>
-            ) : (
-              <div style={styles.sessionList}>
-                {pastSessions.map(session => (
-                  <div
-                    key={session.id}
-                    style={styles.sessionItem}
-                    onClick={() => handleRestoreSession(session)}
-                    className="global-chat-session-item"
-                  >
-                    <div style={styles.sessionInfo}>
-                      <div style={styles.sessionPreview}>{getSessionPreview(session)}</div>
-                      <div style={styles.sessionMeta}>
-                        {formatSessionDate(session.timestamp)} · {session.messages.length} messages
-                      </div>
-                    </div>
-                    <button
-                      style={styles.sessionDeleteBtn}
-                      onClick={(e) => handleDeleteSession(session.id, e)}
-                      aria-label="Delete conversation"
-                      className="global-chat-icon-btn"
-                    >
-                      <MdDeleteOutline size={18} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {pastSessions.length > 0 && (
-              <button
-                style={styles.clearAllBtn}
-                onClick={handleClearAllHistory}
-                className="global-chat-clear-btn"
-              >
-                Clear all history
-              </button>
-            )}
-          </div>
+            <span className="
+              flex-1 text-center font-inter text-base font-medium text-white
+            ">Chat History</span>
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="
+                global-chat-icon-btn cursor-pointer border-none bg-transparent
+                px-1 py-0 leading-none text-white transition-[color]
+                duration-200
+              "
+            >
+              <MdClose size={24} />
+            </button>
+          </>
         ) : (
           <>
-            <div ref={bodyRef} style={styles.body}>
-              <div style={styles.messagesContainer}>
-                {messages.map((m, i) => (
-                  <div key={i} style={m.role === 'user' ? styles.userMsg : styles.assistantMsg}>
-                    {m.content}
-                  </div>
-                ))}
+            <button
+              onClick={handleChatHistoryClick}
+              aria-label="Chat History"
+              className="
+                global-chat-icon-btn cursor-pointer border-none bg-transparent
+                px-1 py-0 leading-none text-white transition-[color]
+                duration-200
+              "
+            >
+              <MdHistory size={24} />
+            </button>
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="
+                global-chat-icon-btn cursor-pointer border-none bg-transparent
+                px-1 py-0 leading-none text-white transition-[color]
+                duration-200
+              "
+            >
+              <MdClose size={24} />
+            </button>
+          </>
+        )}
+      </div>
 
-                {isLoading && (
-                  <div style={styles.loader}>
-                    <div style={styles.spinner} />
-                    Thinking...
-                  </div>
-                )}
+      {showHistory ? (
+        <div className="
+          flex flex-1 flex-col gap-2 overflow-y-auto px-5 pt-0 pb-5
+        ">
+          <button
+            onClick={handleNewChat}
+            className="
+              mb-2 w-full cursor-pointer rounded-lg border-none bg-[#7B99C9]
+              px-4 py-3 font-inter text-sm font-medium text-black
+              transition-opacity duration-200
+            "
+          >
+            + New Chat
+          </button>
 
-                {messages.length === 0 && !isLoading && (
-                  <div style={styles.placeholder}>
-                    Highlight lesson text or ask a question to get started.
+          {pastSessions.length === 0 ? (
+            <div className="
+              shrink-0 p-7.5 text-center text-[#f8f9fa] opacity-70
+            ">
+              No previous conversations for this lesson.
+            </div>
+          ) : (
+            <div className="flex flex-1 flex-col gap-1 overflow-y-auto">
+              {pastSessions.map(session => (
+                <div
+                  key={session.id}
+                  className="
+                    flex cursor-pointer items-center gap-2 rounded-lg
+                    bg-brand-section px-3.5 py-3 transition-[background]
+                    duration-150
+                  "
+                  onClick={() => handleRestoreSession(session)}
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="
+                      truncate font-inter text-sm font-normal text-white
+                    ">{getSessionPreview(session)}</div>
+                    <div className="mt-1 font-inter text-xs text-[#8899AA]">
+                      {formatSessionDate(session.timestamp)} · {session.messages.length} messages
+                    </div>
                   </div>
-                )}
-              </div>
-
-              {!isLoading && lastTopic && messages.slice(-1)[0]?.type === 'analogy' && (
-                <div style={styles.tryWrap}>
                   <button
-                    style={styles.tryBtn}
-                    onClick={() => { void tryAnotherAnalogy(); }}
-                    className="global-chat-try-btn"
+                    onClick={(e) => handleDeleteSession(session.id, e)}
+                    aria-label="Delete conversation"
+                    className="
+                      global-chat-icon-btn flex shrink-0 cursor-pointer
+                      items-center justify-center rounded-sm border-none
+                      bg-transparent p-1 text-[#8899AA] transition-[color]
+                      duration-150
+                    "
                   >
-                    Try another analogy
+                    <MdDeleteOutline size={18} />
                   </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {pastSessions.length > 0 && (
+            <button
+              onClick={handleClearAllHistory}
+              className="
+                mt-3 w-full cursor-pointer rounded-lg border border-error-alt
+                bg-transparent px-4 py-2.5 font-inter text-[13px] font-normal
+                text-error-alt transition-[background,color] duration-150
+              "
+            >
+              Clear all history
+            </button>
+          )}
+        </div>
+      ) : (
+        <>
+          <div ref={bodyRef} className="
+            flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden overflow-y-auto
+            px-5 py-3.75
+          ">
+            <div className="
+              flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden
+              overflow-y-auto px-5 py-3.75
+            ">
+              {messages.map((m, i) => (
+                <div key={i} className={m.role === 'user'
+                  ? `
+                    max-w-[80%] shrink-0 self-end rounded-[12px_12px_2px_12px]
+                    bg-[#2F3D68] px-3.75 py-2.5 font-inter font-normal
+                    wrap-break-word whitespace-pre-wrap text-white
+                  `
+                  : `
+                    max-w-full shrink-0 self-start border-none
+                    bg-brand-dark-panel px-3.75 py-2.5 font-inter font-normal
+                    wrap-break-word whitespace-pre-wrap text-white
+                  `
+                }>
+                  {m.content}
+                </div>
+              ))}
+
+              {isLoading && (
+                <div className="
+                  flex shrink-0 items-center gap-2.5 font-inter font-normal
+                  text-[#f8f9fa] italic
+                ">
+                  <div className="
+                    size-4.5 shrink-0 animate-spin rounded-full border-[3px]
+                    border-brand-border border-t-warn
+                  " />
+                  Thinking...
+                </div>
+              )}
+
+              {messages.length === 0 && !isLoading && (
+                <div className="
+                  shrink-0 p-7.5 text-center text-[#f8f9fa] opacity-70
+                ">
+                  Highlight lesson text or ask a question to get started.
                 </div>
               )}
             </div>
 
-            <div style={styles.footer}>
-              <div style={styles.inputContainer}>
-                <input
-                  ref={inputRef}
-                  style={styles.input}
-                  placeholder="Ask me anything"
-                  value={draft}
-                  disabled={isLoading}
-                  onChange={e => setDraft(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { void sendFreeForm(); } }}
-                  className="global-chat-input"
-                />
+            {!isLoading && lastTopic && messages.slice(-1)[0]?.type === 'analogy' && (
+              <div className="
+                pointer-events-none absolute inset-x-0 bottom-15 flex
+                justify-start px-5 py-3.75
+              ">
                 <button
-                  style={styles.sendBtn}
-                  onClick={() => { void sendFreeForm(); }}
-                  disabled={isLoading || !draft.trim()}
-                  aria-label="Send"
-                  className="global-chat-send-btn"
+                  onClick={() => { void tryAnotherAnalogy(); }}
+                  className="
+                    pointer-events-auto flex cursor-pointer items-center
+                    rounded-lg border border-white bg-brand-dark-panel px-4.5
+                    py-2 font-inter text-sm font-normal text-white
+                    transition-all duration-200
+                  "
                 >
-                  <MdArrowUpward size={20} />
+                  Try another analogy
                 </button>
               </div>
-            </div>
-          </>
-        )}
-      </div>
-    </>
-  );
-};
+            )}
+          </div>
 
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    background: colors.chatBackground,
-    color: colors.white,
-    boxShadow: '0 0 10px rgba(0,0,0,0.4)',
-    position: 'fixed',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 2000,
-    flexShrink: 0,
-    minWidth: 300,
-    maxWidth: 600,
-  },
-  resizer: {
-    width: 4,
-    cursor: 'ew-resize',
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    backgroundColor: 'transparent',
-    transition: 'background-color 150ms ease',
-    zIndex: 1,
-  },
-  header: {
-    flexShrink: 0,
-    display: 'flex',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    padding: '12px 20px',
-    background: colors.chatBackground,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: 500,
-    fontFamily: "'Inter', sans-serif",
-    color: colors.white,
-    textAlign: 'center',
-  },
-  historyBtn: {
-    background: 'none',
-    border: 'none',
-    color: '#FFFFFF',
-    fontSize: 24,
-    cursor: 'pointer',
-    transition: 'color 0.2s ease',
-    padding: '0 4px',
-    lineHeight: 1,
-  },
-  closeBtn: {
-    background: 'none',
-    border: 'none',
-    color: '#FFFFFF',
-    fontSize: 28,
-    cursor: 'pointer',
-    transition: 'color 0.2s ease',
-    padding: '0 4px',
-    lineHeight: 1,
-  },
-  body: {
-    flex: 1,
-    padding: '15px 20px',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-    minHeight: 0,
-  },
-  messagesContainer: {
-    flex: 1,
-    padding: '15px 20px',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-    minHeight: 0,
-  },
-  userMsg: {
-    alignSelf: 'flex-end',
-    background: colors.userMessageBg,
-    borderRadius: '12px 12px 2px 12px',
-    padding: '10px 15px',
-    maxWidth: '80%',
-    fontWeight: '400',
-    fontFamily: "'Inter', sans-serif",
-    whiteSpace: 'pre-wrap',
-    wordWrap: 'break-word',
-    flexShrink: 0,
-    color: colors.white,
-  },
-  assistantMsg: {
-    alignSelf: 'flex-start',
-    background: colors.assistantMessageBg,
-    border: 'none',
-    padding: '10px 15px',
-    maxWidth: '100%',
-    fontWeight: '400',
-    fontFamily: "'Inter', sans-serif",
-    whiteSpace: 'pre-wrap',
-    wordWrap: 'break-word',
-    flexShrink: 0,
-    color: colors.white,
-  },
-  loader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    color: colors.light,
-    fontStyle: 'italic',
-    fontWeight: '400',
-    fontFamily: "'Inter', sans-serif",
-    flexShrink: 0,
-  },
-  spinner: {
-    width: 18,
-    height: 18,
-    borderRadius: '50%',
-    border: `3px solid ${colors.border}`,
-    borderTop: `3px solid ${colors.loadingSpinner}`,
-    animation: 'spin 1s linear infinite',
-    flexShrink: 0,
-  },
-  tryWrap: {
-    position: 'absolute',
-    bottom: 60,
-    left: 0,
-    right: 0,
-    padding: '15px 20px',
-    display: 'flex',
-    justifyContent: 'flex-start',
-    pointerEvents: 'none',
-  },
-  tryBtn: {
-    background: colors.chatBackground,
-    color: colors.white,
-    border: `1px solid ${colors.white}`,
-    borderRadius: 8,
-    padding: '8px 18px',
-    cursor: 'pointer',
-    fontSize: 14,
-    fontWeight: '400',
-    fontFamily: "'Inter', sans-serif",
-    display: 'flex',
-    alignItems: 'center',
-    transition: 'all 0.2s ease',
-    pointerEvents: 'auto',
-  },
-  placeholder: {
-    textAlign: 'center',
-    opacity: 0.7,
-    color: colors.light,
-    padding: 30,
-    flexShrink: 0,
-  },
-  footer: {
-    flexShrink: 0,
-    padding: '15px 20px',
-    marginTop: '25px',
-    background: '#181F31',
-  },
-  inputContainer: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  input: {
-    width: '100%',
-    padding: '14px 50px 14px 15px',
-    borderRadius: 8,
-    border: 'none',
-    background: colors.inputBackground,
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '400',
-    fontFamily: "'Inter', sans-serif",
-    outline: 'none',
-    minHeight: 48,
-    boxSizing: 'border-box',
-    transition: 'border-color 0.2s ease',
-  },
-  sendBtn: {
-    position: 'absolute',
-    right: 8,
-    width: 36,
-    height: 36,
-    background: colors.buttonBackground,
-    border: 'none',
-    borderRadius: '6px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#000000',
-    cursor: 'pointer',
-    fontSize: 16,
-    flexShrink: 0,
-    transition: 'background-color 0.2s ease',
-  },
-  // --- History panel styles ---
-  historyPanel: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    padding: '0 20px 20px',
-    overflowY: 'auto',
-    gap: 8,
-  },
-  newChatBtn: {
-    width: '100%',
-    padding: '12px 16px',
-    background: colors.buttonBackground,
-    color: '#000',
-    border: 'none',
-    borderRadius: 8,
-    fontSize: 14,
-    fontWeight: 500,
-    fontFamily: "'Inter', sans-serif",
-    cursor: 'pointer',
-    marginBottom: 8,
-    transition: 'opacity 0.2s ease',
-  },
-  sessionList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 4,
-    flex: 1,
-    overflowY: 'auto',
-  },
-  sessionItem: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '12px 14px',
-    background: colors.inputBackground,
-    borderRadius: 8,
-    cursor: 'pointer',
-    transition: 'background 0.15s ease',
-    gap: 8,
-  },
-  sessionInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
-  sessionPreview: {
-    fontSize: 14,
-    fontWeight: 400,
-    fontFamily: "'Inter', sans-serif",
-    color: colors.white,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  sessionMeta: {
-    fontSize: 12,
-    color: '#8899AA',
-    fontFamily: "'Inter', sans-serif",
-    marginTop: 4,
-  },
-  sessionDeleteBtn: {
-    background: 'none',
-    border: 'none',
-    color: '#8899AA',
-    cursor: 'pointer',
-    padding: 4,
-    borderRadius: 4,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'color 0.15s ease',
-    flexShrink: 0,
-  },
-  clearAllBtn: {
-    width: '100%',
-    padding: '10px 16px',
-    background: 'transparent',
-    color: colors.dangerRed,
-    border: `1px solid ${colors.dangerRed}`,
-    borderRadius: 8,
-    fontSize: 13,
-    fontWeight: 400,
-    fontFamily: "'Inter', sans-serif",
-    cursor: 'pointer',
-    marginTop: 12,
-    transition: 'background 0.15s ease, color 0.15s ease',
-  },
+          <div className="mt-6.25 shrink-0 bg-brand-dark-panel px-5 py-3.75">
+            <div className="relative flex items-center">
+              <input
+                ref={inputRef}
+                className="
+                  global-chat-input box-border min-h-12 w-full rounded-lg
+                  border-none bg-brand-section py-3.5 pr-12.5 pl-3.75 font-inter
+                  text-base font-normal text-white transition-[border-color]
+                  duration-200 outline-none
+                "
+                placeholder="Ask me anything"
+                value={draft}
+                disabled={isLoading}
+                onChange={e => setDraft(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { void sendFreeForm(); } }}
+              />
+              <button
+                onClick={() => { void sendFreeForm(); }}
+                disabled={isLoading || !draft.trim()}
+                aria-label="Send"
+                className="
+                  global-chat-send-btn absolute right-2 flex size-9 shrink-0
+                  cursor-pointer items-center justify-center rounded-md
+                  border-none bg-[#7B99C9] text-base text-black
+                  transition-[background-color] duration-200
+                "
+              >
+                <MdArrowUpward size={20} />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
 };
 
 export default GlobalChat;

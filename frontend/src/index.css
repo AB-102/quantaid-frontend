@@ -1,33 +1,96 @@
-:root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+/* ── Custom design tokens ───────────────────────────────────────── */
+@theme {
+  /* Fonts */
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-roboto: 'Roboto', arial, sans-serif;
+  --font-sarabun: 'Sarabun', system-ui, sans-serif;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Brand color palette */
+  --color-brand-darkest: #010117;
+  --color-brand-bg: #030E29;
+  --color-brand-navy: #182549;
+  --color-brand-medium: #1F305F;
+  --color-brand-accent: #071746;
+  --color-brand-input-navy: #10204D;
+  --color-brand-deep: #142748;
+  --color-brand-mid: #1a2332;
+  --color-brand-hover: #212E44;
+  --color-brand-search: #032242;
+  --color-brand-panel: #17213A;
+  /* --color-brand-card: #253655; */
+  --color-brand-dark-panel: #181F31;
+  --color-brand-section: #2A2E46;
+
+  --color-brand-blue: #3B89FF;
+  --color-brand-blue-mid: #2C5CE6;
+  --color-brand-slate: #566395;
+  --color-brand-sky: #7BA8ED;
+  --color-brand-light-blue: #8CBAFF;
+  --color-brand-focus: #A4C5FF;
+
+  --color-brand-muted: #A487AE;
+  --color-brand-cool: #AAAAC1;
+  --color-brand-gray: #9D9D9D;
+  --color-brand-gray-mid: #7A7C92;
+  --color-brand-gray-dim: #A2A2B1;
+
+  --color-brand-subtle: #BFC3D9;
+  --color-brand-border: #424E62;
+  --color-brand-border-b: #434F62;
+  --color-brand-border-dark: #353E56;
+  --color-brand-border-light: rgba(255, 255, 255, 0.1);
+
+  --color-success: #4ade80;
+  --color-error: #fa6060;
+  --color-error-alt: #e74c3c;
+  --color-warn: #FFC107;
+
+  /* Custom animations */
+  --animate-fill-from-bottom: fillFromBottom 1s ease forwards;
 }
 
-.font-roboto {
-  font-family: 'Roboto', arial, sans-serif;
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+
+  100% {
+    left: 100%;
+  }
 }
 
-.font-sarabun {
-  font-family: 'Sarabun', system-ui, sans-serif;
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+@keyframes fillFromBottom {
+  0% {
+    stroke-dashoffset: 157.08;
+    /* 2 * Math.PI * 25 */
+    transform: rotate(90deg);
+  }
+
+  100% {
+    stroke-dashoffset: var(--final-offset);
+    transform: rotate(var(--final-rotation));
+  }
 }
-a:hover {
-  color: #535bf2;
+
+/* ── Global resets ──────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
@@ -36,7 +99,13 @@ body {
   height: 100%;
   width: 100%;
   overflow-x: hidden;
-  font-family: inherit;
+  font-family: var(--font-inter);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-synthesis: none;
+  line-height: 1.5;
+  font-weight: 400;
 }
 
 #root {
@@ -46,56 +115,491 @@ body {
   height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
-  font-family: inherit;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  font-family: inherit;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-  font-family: inherit;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+/* ── Interactive word tooltip ────────────────────────────────────── */
+.interactive-word {
+  position: relative;
+  color: #566395;
+  text-decoration: underline dotted;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-input, textarea, select {
-  font-family: inherit;
+.interactive-word:hover::after {
+  content: attr(data-term);
+  position: absolute;
+  top: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #566395;
+  color: #E8E3F3;
+  padding: 8px 12px;
+  border-radius: 5px;
+  max-width: 200px;
+  text-align: center;
+  white-space: normal;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  font-size: 0.9em;
 }
 
-span, div, p, label {
-  font-family: inherit;
+/* ── Highlight analogy button ────────────────────────────────────── */
+.highlight-analogy-btn:hover {
+  background-color: #9bb0dd !important;
+  transform: translateY(-1px);
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* ── Focus rings (consolidated) ─────────────────────────────────── */
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+.quiz-option:focus-visible {
+  outline: 3px solid #A4C5FF !important;
+  outline-offset: 2px !important;
+}
+
+/* Login toggle button: smaller focus ring */
+button.text-button:focus-visible {
+  outline: 2px solid #A4C5FF !important;
+  outline-offset: 1px !important;
+  border-radius: 2px;
+}
+
+/* Tutorial popup close button: inset focus ring (visible at container edge) */
+.tutorial-popup .popup>button:focus-visible {
+  outline: 2px solid #3B89FF;
+  outline-offset: -3px;
+}
+
+/* Sidebar / global chat accessible focus */
+.sidebar-coordinated button:focus-visible,
+.global-chat-coordinated button:focus-visible {
+  outline: 2px solid #3B89FF;
+  outline-offset: 2px;
+}
+
+/* ── Form inputs: checkbox / radio pseudo-elements ───────────────── */
+input[type="checkbox"]:checked {
+  background-color: #3B89FF !important;
+  border-color: #3B89FF !important;
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 1px;
+  width: 4px;
+  height: 10px;
+  border: solid #0F1F4C;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+input[type="checkbox"]:hover {
+  border-color: #3B89FF !important;
+}
+
+input[type="radio"]:checked {
+  background-color: #3B89FF !important;
+  border-color: #3B89FF !important;
+}
+
+input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #3B89FF;
+  border: 2px solid #131C46;
+}
+
+input[type="radio"]:hover {
+  border-color: #3B89FF !important;
+}
+
+/* Label hover states wrapping checkbox/radio */
+label:has(input[type="checkbox"]):hover,
+label:has(input[type="radio"]):hover {
+  border-color: #1E4277 !important;
+  transition: all 0.2s ease;
+}
+
+label:has(input[type="checkbox"]:checked):hover,
+label:has(input[type="radio"]:checked):hover {
+  background-color: #10204D !important;
+  border-color: #1E4277 !important;
+}
+
+/* ── Profile settings modal: scoped form rules ───────────────────── */
+[aria-label="Profile settings"] input[type="radio"]:checked {
+  background-color: #3B89FF !important;
+  border-color: #3B89FF !important;
+}
+
+[aria-label="Profile settings"] input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #3B89FF;
+  border: 2px solid #131C46;
+}
+
+[aria-label="Profile settings"] input[type="radio"]:hover {
+  border-color: #3B89FF !important;
+}
+
+[aria-label="Profile settings"] input[type="checkbox"]:checked {
+  background-color: #3B89FF !important;
+  border-color: #3B89FF !important;
+}
+
+[aria-label="Profile settings"] input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 0;
+  width: 4px;
+  height: 8px;
+  border: solid #0F1F4C;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+[aria-label="Profile settings"] input[type="checkbox"]:hover {
+  border-color: #3B89FF !important;
+}
+
+[aria-label="Profile settings"] label:has(input[type="checkbox"]):hover,
+[aria-label="Profile settings"] label:has(input[type="radio"]):hover {
+  border-color: #1E4277 !important;
+}
+
+[aria-label="Profile settings"] input[type="text"]:focus {
+  border-bottom-color: #7BA8ED !important;
+}
+
+[aria-label="Profile settings"] input[type="text"]::placeholder {
+  color: #666 !important;
+  font-style: italic;
+}
+
+[aria-label="Profile settings"] button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+[aria-label="Profile settings"]>div:last-child::-webkit-scrollbar {
+  width: 6px;
+}
+
+[aria-label="Profile settings"]>div:last-child::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[aria-label="Profile settings"]>div:last-child::-webkit-scrollbar-thumb {
+  background: #424E62;
+  border-radius: 3px;
+}
+
+/* ── Profile creation hover effects ─────────────────────────────── */
+.profile-bottom-buttons:hover:not(:disabled) {
+  opacity: 0.9 !important;
+  transition: opacity 0.2s ease;
+}
+
+.hobby-button:hover:not(:disabled) {
+  opacity: 0.9 !important;
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background-color: #10204D !important;
+  border-color: #1D4177 !important;
+  transition: all 0.2s ease;
+}
+
+button.skip-button:hover:not(:disabled) {
+  background-color: #404A5F !important;
+  transition: all 0.2s ease;
+}
+
+/* ── Feedback modal hover effects ────────────────────────────────── */
+.feedback-category-button:hover {
+  background-color: rgba(66, 78, 98, 0.2) !important;
+  border-color: #566591 !important;
+}
+
+.feedback-screenshot-button:hover {
+  background-color: rgba(53, 62, 84, 0.3) !important;
+  border-color: #566591 !important;
+}
+
+.feedback-submit-button:hover:not(:disabled) {
+  background-color: #404A5F !important;
+}
+
+.feedback-textarea:focus {
+  border-color: #566591 !important;
+}
+
+.feedback-textarea::placeholder {
+  color: #6B7280;
+}
+
+/* ── Quiz hover effects ──────────────────────────────────────────── */
+.quiz-bottom-buttons:hover:not(:disabled) {
+  opacity: 0.9 !important;
+  transition: opacity 0.2s ease;
+}
+
+.revisit-lesson-link:hover:not(:disabled) {
+  opacity: 0.9 !important;
+  transition: opacity 0.2s ease;
+}
+
+/* ── Dashboard hover effects ─────────────────────────────────────── */
+.nav-button:hover {
+  background-color: #032242 !important;
+}
+
+.nav-button.nav-button-active {
+  background-color: #032242 !important;
+  color: #FFFFFF !important;
+}
+
+.nav-button.nav-button-active:hover {
+  background-color: #032242 !important;
+  color: #FFFFFF !important;
+}
+
+.breadcrumb-button:hover {
+  text-decoration: underline !important;
+}
+
+.profile-dropdown-item:hover {
+  background-color: #0B2F54 !important;
+}
+
+.feedback-button:hover:not(:disabled) {
+  opacity: 0.9 !important;
+  transition: opacity 0.2s ease;
+}
+
+.profile-button:hover {
+  background-color: #032242 !important;
+}
+
+.topic-button:hover:not(:disabled) {
+  background-color: #212E44 !important;
+  border: 2px solid rgba(255, 255, 255, 0.1) !important;
+  outline: none !important;
+}
+
+.global-chat-icon-btn:hover {
+  color: #dddddd !important;
+}
+
+.global-chat-send-btn:hover:not(:disabled) {
+  background-color: #6b7bb5 !important;
+}
+
+.global-chat-send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.global-chat-input:focus {
+  border-color: #8a9cdb !important;
+}
+
+.resizer:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* ── Dashboard search component ──────────────────────────────────── */
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.search-input:focus::placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.search-container:focus-within {
+  border-color: rgba(255, 255, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Custom scrollbar ────────────────────────────────────────────── */
+.default-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.default-scrollbar::-webkit-scrollbar-track {
+  background: rgba(42, 46, 70, 0.3);
+  border-radius: 4px;
+}
+
+.default-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2A2E46 0%, #1F2336 100%);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.default-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #353A56 0%, #2A2E46 100%);
+  border-radius: 4px;
+}
+
+.default-scrollbar::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #1F2336 0%, #171A28 100%);
+  border-radius: 4px;
+}
+
+.default-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #2A2E46 rgba(42, 46, 70, 0.3);
+  scroll-behavior: smooth;
+  transition: padding-right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* ── Coordinated dashboard animations ───────────────────────────── */
+.sidebar-coordinated,
+.main-panel-coordinated,
+.global-chat-coordinated {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  will-change: transform, width, margin-left;
+}
+
+.sidebar-coordinated {
+  transition: width 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-panel-coordinated {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.global-chat-coordinated {
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.no-transition.sidebar-coordinated,
+.no-transition.main-panel-coordinated,
+.no-transition.global-chat-coordinated,
+.no-transition .sidebar-coordinated,
+.no-transition .main-panel-coordinated,
+.no-transition .global-chat-coordinated {
+  transition: none !important;
+}
+
+/* Sidebar child element animation helpers */
+.sidebar-coordinated .nav-button span,
+.sidebar-coordinated .profile-button span,
+.sidebar-coordinated .feedback-button span,
+.sidebar-coordinated .profile-dropdown-item span {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: clip !important;
+  min-width: 0 !important;
+  transition: opacity 180ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.sidebar-coordinated svg {
+  flex-shrink: 0 !important;
+  min-width: auto !important;
+}
+
+.sidebar-coordinated button {
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: clip !important;
+}
+
+.sidebar-coordinated .profile-dropdown-item {
+  overflow: clip !important;
+}
+
+.sidebar-coordinated .profile-dropdown-item span {
+  opacity: 1 !important;
+}
+
+.sidebar-coordinated [aria-label="Quantaid Logo"] {
+  overflow: hidden !important;
+}
+
+.sidebar-coordinated [aria-label="Quantaid Logo"]>div {
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden !important;
+}
+
+/* ── Dashboard content container ─────────────────────────────────── */
+.dashboard-content {
+  contain: layout style;
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+/* ── Responsive breakpoints ─────────────────────────────────────── */
+@media (max-width: 1199px) {
+  .sidebar-coordinated {
+    transition-duration: 300ms;
   }
-  a:hover {
-    color: #747bff;
+
+  .global-chat-coordinated {
+    transition-duration: 300ms;
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+@media (max-width: 800px) {
+  .main-panel-coordinated {
+    min-width: 250px;
+  }
+
+  .dashboard-content {
+    padding: 1rem 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .global-chat-coordinated {
+    width: calc(100vw - 90px) !important;
+    max-width: none;
+  }
+}
+
+/* ── Accessibility ───────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+
+  .sidebar-coordinated,
+  .main-panel-coordinated,
+  .global-chat-coordinated {
+    transition-duration: 0.1s !important;
+  }
+
+  .main-panel-coordinated {
+    transition: all 0.1s ease !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .sidebar-coordinated {
+    border-right: 2px solid;
+  }
+
+  .global-chat-coordinated {
+    border-left: 2px solid;
   }
 }

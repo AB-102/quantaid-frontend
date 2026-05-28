@@ -1,5 +1,4 @@
 import React from 'react';
-import { styles } from './ProfileCreationStyles';
 
 import {
   whereHeardOptions,
@@ -65,26 +64,32 @@ export const stepConfigs: StepConfig[] = [
     },
     renderContent: (formData, handlers) => (
       <>
-        <div style={styles.checkList}>
+        <div className="mb-6 flex w-full max-w-150 flex-col gap-4">
           {whereHeardOptions.map((option) => (
             option === 'Other (please specify)' ? (
               <label
                 key={option}
-                style={{
-                  ...styles.checkItem,
-                  ...styles.checkItemExpanded,
-                  backgroundColor: formData.whereHeard.includes(option) ? '#10204D' : 'transparent',
-                  borderColor: formData.whereHeard.includes(option) ? '#1D4177' : '#434F62',
-                }}
+                className={`
+                  flex min-h-15 min-w-100 cursor-pointer items-start rounded-lg
+                  border-2 px-6 py-4 text-left font-inter text-lg
+                  text-brand-cool transition-all duration-200
+                  ${formData.whereHeard.includes(option) ? `
+                    border-[#1D4177] bg-brand-input-navy
+                  ` : `border-brand-border-b bg-transparent`}
+                `}
               >
                 <input
                   type="checkbox"
                   checked={formData.whereHeard.includes(option)}
                   onChange={() => handlers.handleWhereHeardChange(option)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handlers.handleWhereHeardChange(option); } }}
-                  style={styles.checkbox}
+                  className="
+                    relative mr-4 -ml-2.5 size-5 shrink-0 cursor-pointer
+                    appearance-none rounded-sm border-2 border-brand-cool
+                    bg-transparent transition-all duration-200
+                  "
                 />
-                <div style={styles.optionContent}>
+                <div className="flex w-full flex-col gap-2">
                   <span>Other (please specify)</span>
                   {formData.whereHeard.includes(option) && (
                     <input
@@ -94,7 +99,11 @@ export const stepConfigs: StepConfig[] = [
                       onChange={(e) =>
                         handlers.setFormData(prev => ({ ...prev, otherWhereHeard: e.target.value }))
                       }
-                      style={styles.inlineOtherInput}
+                      className="
+                        w-full border-0 border-b-2 border-brand-border
+                        bg-transparent px-0 py-2 font-inter text-base text-white
+                        transition-all duration-200 outline-none
+                      "
                       autoFocus
                     />
                   )}
@@ -103,18 +112,25 @@ export const stepConfigs: StepConfig[] = [
             ) : (
               <label
                 key={option}
-                style={{
-                  ...styles.checkItem,
-                  backgroundColor: formData.whereHeard.includes(option) ? '#10204D' : 'transparent',
-                  borderColor: formData.whereHeard.includes(option) ? '#1D4177' : '#434F62',
-                }}
+                className={`
+                  flex min-w-100 cursor-pointer items-center rounded-lg border-2
+                  px-6 py-3.5 text-left font-inter text-lg text-brand-cool
+                  transition-all duration-200
+                  ${formData.whereHeard.includes(option) ? `
+                    border-[#1D4177] bg-brand-input-navy
+                  ` : `border-brand-border-b bg-transparent`}
+                `}
               >
                 <input
                   type="checkbox"
                   checked={formData.whereHeard.includes(option)}
                   onChange={() => handlers.handleWhereHeardChange(option)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handlers.handleWhereHeardChange(option); } }}
-                  style={styles.checkbox}
+                  className="
+                    relative mr-4 -ml-2.5 size-5 shrink-0 cursor-pointer
+                    appearance-none rounded-sm border-2 border-brand-cool
+                    bg-transparent transition-all duration-200
+                  "
                 />
                 {option}
               </label>
@@ -131,19 +147,25 @@ export const stepConfigs: StepConfig[] = [
       (formData.educationLevel !== '' || formData.otherEducationLevel !== ''),
     renderContent: (formData, handlers) => (
       <>
-        <div style={styles.educationContainer}>
+        <div className="flex w-full max-w-200 flex-col items-start gap-8">
           {/* HIGH SCHOOL Section */}
-          <div style={styles.educationSection}>
-            <h4 style={styles.radioGroupLabel}>HIGH SCHOOL</h4>
-            <div style={styles.radioRowGroup}>
+          <div className="flex w-full flex-col items-start gap-4">
+            <h4 className="
+              mb-4 font-inter text-[1.3rem] font-semibold text-white
+            ">HIGH SCHOOL</h4>
+            <div className="flex flex-row flex-wrap gap-3">
               {highSchoolLevels.map((lvl) => (
                 <label
                   key={lvl}
-                  style={{
-                    ...styles.radioItemCompact,
-                    backgroundColor: (formData.educationCategory === 'HighSchool' && formData.educationLevel === lvl) ? '#10204D' : 'transparent',
-                    borderColor: (formData.educationCategory === 'HighSchool' && formData.educationLevel === lvl) ? '#1D4177' : '#434F62',
-                  }}
+                  className={`
+                    flex min-w-fit cursor-pointer items-center rounded-lg
+                    border-2 px-5 py-3 text-left font-inter text-base
+                    whitespace-nowrap text-brand-cool transition-all
+                    duration-200
+                    ${(formData.educationCategory === 'HighSchool' && formData.educationLevel === lvl) ? `
+                      border-[#1D4177] bg-brand-input-navy
+                    ` : `border-brand-border-b bg-transparent`}
+                  `}
                 >
                   <input
                     type="radio"
@@ -167,7 +189,11 @@ export const stepConfigs: StepConfig[] = [
                         }));
                       }
                     }}
-                    style={styles.radio}
+                    className="
+                      relative mr-4 -ml-2.5 size-5 shrink-0 cursor-pointer
+                      appearance-none rounded-full border-2 border-brand-cool
+                      bg-transparent transition-all duration-200
+                    "
                   />
                   {lvl}
                 </label>
@@ -176,17 +202,23 @@ export const stepConfigs: StepConfig[] = [
           </div>
 
           {/* COLLEGE Section */}
-          <div style={styles.educationSection}>
-            <h4 style={styles.radioGroupLabel}>COLLEGE</h4>
-            <div style={styles.radioRowGroup}>
+          <div className="flex w-full flex-col items-start gap-4">
+            <h4 className="
+              mb-4 font-inter text-[1.3rem] font-semibold text-white
+            ">COLLEGE</h4>
+            <div className="flex flex-row flex-wrap gap-3">
               {collegeLevels.map((lvl) => (
                 <label
                   key={lvl}
-                  style={{
-                    ...styles.radioItemCompact,
-                    backgroundColor: (formData.educationCategory === 'College' && formData.educationLevel === lvl) ? '#10204D' : 'transparent',
-                    borderColor: (formData.educationCategory === 'College' && formData.educationLevel === lvl) ? '#1D4177' : '#434F62',
-                  }}
+                  className={`
+                    flex min-w-fit cursor-pointer items-center rounded-lg
+                    border-2 px-5 py-3 text-left font-inter text-base
+                    whitespace-nowrap text-brand-cool transition-all
+                    duration-200
+                    ${(formData.educationCategory === 'College' && formData.educationLevel === lvl) ? `
+                      border-[#1D4177] bg-brand-input-navy
+                    ` : `border-brand-border-b bg-transparent`}
+                  `}
                 >
                   <input
                     type="radio"
@@ -210,7 +242,11 @@ export const stepConfigs: StepConfig[] = [
                         }));
                       }
                     }}
-                    style={styles.radio}
+                    className="
+                      relative mr-4 -ml-2.5 size-5 shrink-0 cursor-pointer
+                      appearance-none rounded-full border-2 border-brand-cool
+                      bg-transparent transition-all duration-200
+                    "
                   />
                   {lvl}
                 </label>
@@ -218,61 +254,73 @@ export const stepConfigs: StepConfig[] = [
             </div>
           </div>
 
-          <div style={styles.educationSection}>
-          <h4 style={styles.radioGroupLabel}></h4>
-          <div style={styles.radioRowGroup}>
-            <label
-              style={{
-                ...styles.radioItemCompact,
-                ...styles.radioItemExpanded,
-                backgroundColor: formData.educationCategory === 'Other' ? '#10204D' : 'transparent',
-                borderColor: formData.educationCategory === 'Other' ? '#1D4177' : '#434F62',
-              }}
-            >
-              <input
-                type="radio"
-                checked={formData.educationCategory === 'Other'}
-                onChange={() =>
-                  handlers.setFormData(prev => ({
-                    ...prev,
-                    educationCategory: 'Other',
-                    educationLevel: '',
-                  }))
-                }
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
+          <div className="flex w-full flex-col items-start gap-4">
+            <h4 className="
+              mb-4 font-inter text-[1.3rem] font-semibold text-white
+            "></h4>
+            <div className="flex flex-row flex-wrap gap-3">
+              <label
+                className={`
+                  flex min-h-15 min-w-75 cursor-pointer items-start rounded-lg
+                  border-2 px-5 py-4 text-left font-inter text-base
+                  text-brand-cool transition-all duration-200
+                  ${formData.educationCategory === 'Other' ? `
+                    border-[#1D4177] bg-brand-input-navy
+                  ` : `border-brand-border-b bg-transparent`}
+                `}
+              >
+                <input
+                  type="radio"
+                  checked={formData.educationCategory === 'Other'}
+                  onChange={() =>
                     handlers.setFormData(prev => ({
                       ...prev,
                       educationCategory: 'Other',
                       educationLevel: '',
-                    }));
+                    }))
                   }
-                }}
-                style={styles.radio}
-              />
-              <div style={styles.optionContent}>
-                <span>Other (please specify)</span>
-                {formData.educationCategory === 'Other' && (
-                  <input
-                    type="text"
-                    placeholder="Type here..."
-                    value={formData.otherEducationLevel}
-                    onChange={(e) =>
-                      handlers.setFormData(prev => ({ ...prev, otherEducationLevel: e.target.value }))
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handlers.setFormData(prev => ({
+                        ...prev,
+                        educationCategory: 'Other',
+                        educationLevel: '',
+                      }));
                     }
-                    style={styles.inlineOtherInput}
-                    autoFocus
-                  />
-                )}
-              </div>
-            </label>
+                  }}
+                  className="
+                    relative mr-4 -ml-2.5 size-5 shrink-0 cursor-pointer
+                    appearance-none rounded-full border-2 border-brand-cool
+                    bg-transparent transition-all duration-200
+                  "
+                />
+                <div className="flex w-full flex-col gap-2">
+                  <span>Other (please specify)</span>
+                  {formData.educationCategory === 'Other' && (
+                    <input
+                      type="text"
+                      placeholder="Type here..."
+                      value={formData.otherEducationLevel}
+                      onChange={(e) =>
+                        handlers.setFormData(prev => ({ ...prev, otherEducationLevel: e.target.value }))
+                      }
+                      className="
+                        w-full border-0 border-b-2 border-brand-border
+                        bg-transparent px-0 py-2 font-inter text-base text-white
+                        transition-all duration-200 outline-none
+                      "
+                      autoFocus
+                    />
+                  )}
+                </div>
+              </label>
+            </div>
           </div>
         </div>
-      </div>
-    </>
-  )
-},
+      </>
+    )
+  },
   {
     title: "Which subjects have you studied or have experience in?",
     subtitle: "(Select all that apply)",
@@ -283,26 +331,32 @@ export const stepConfigs: StepConfig[] = [
     },
     renderContent: (formData, handlers) => (
       <>
-        <div style={styles.checkList}>
+        <div className="mb-6 flex w-full max-w-150 flex-col gap-4">
           {subjects.map((subj) => (
             subj === 'Other (please specify)' ? (
               <label
                 key={subj}
-                style={{
-                  ...styles.checkItem,
-                  ...styles.checkItemExpanded,
-                  backgroundColor: formData.subjects.includes(subj) ? '#10204D' : 'transparent',
-                  borderColor: formData.subjects.includes(subj) ? '#1D4177' : '#434F62',
-                }}
+                className={`
+                  flex min-h-15 min-w-100 cursor-pointer items-start rounded-lg
+                  border-2 px-6 py-4 text-left font-inter text-lg
+                  text-brand-cool transition-all duration-200
+                  ${formData.subjects.includes(subj) ? `
+                    border-[#1D4177] bg-brand-input-navy
+                  ` : `border-brand-border-b bg-transparent`}
+                `}
               >
                 <input
                   type="checkbox"
                   checked={formData.subjects.includes(subj)}
                   onChange={() => handlers.handleSubjectsChange(subj)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handlers.handleSubjectsChange(subj); } }}
-                  style={styles.checkbox}
+                  className="
+                    relative mr-4 -ml-2.5 size-5 shrink-0 cursor-pointer
+                    appearance-none rounded-sm border-2 border-brand-cool
+                    bg-transparent transition-all duration-200
+                  "
                 />
-                <div style={styles.optionContent}>
+                <div className="flex w-full flex-col gap-2">
                   <span>Other (please specify):</span>
                   {formData.subjects.includes(subj) && (
                     <input
@@ -312,7 +366,11 @@ export const stepConfigs: StepConfig[] = [
                       onChange={(e) =>
                         handlers.setFormData(prev => ({ ...prev, otherSubject: e.target.value }))
                       }
-                      style={styles.inlineOtherInput}
+                      className="
+                        w-full border-0 border-b-2 border-brand-border
+                        bg-transparent px-0 py-2 font-inter text-base text-white
+                        transition-all duration-200 outline-none
+                      "
                       autoFocus
                     />
                   )}
@@ -321,18 +379,25 @@ export const stepConfigs: StepConfig[] = [
             ) : (
               <label
                 key={subj}
-                style={{
-                  ...styles.checkItem,
-                  backgroundColor: formData.subjects.includes(subj) ? '#10204D' : 'transparent',
-                  borderColor: formData.subjects.includes(subj) ? '#1D4177' : '#434F62',
-                }}
+                className={`
+                  flex min-w-100 cursor-pointer items-center rounded-lg border-2
+                  px-6 py-3.5 text-left font-inter text-lg text-brand-cool
+                  transition-all duration-200
+                  ${formData.subjects.includes(subj) ? `
+                    border-[#1D4177] bg-brand-input-navy
+                  ` : `border-brand-border-b bg-transparent`}
+                `}
               >
                 <input
                   type="checkbox"
                   checked={formData.subjects.includes(subj)}
                   onChange={() => handlers.handleSubjectsChange(subj)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handlers.handleSubjectsChange(subj); } }}
-                  style={styles.checkbox}
+                  className="
+                    relative mr-4 -ml-2.5 size-5 shrink-0 cursor-pointer
+                    appearance-none rounded-sm border-2 border-brand-cool
+                    bg-transparent transition-all duration-200
+                  "
                 />
                 {subj}
               </label>
@@ -346,15 +411,18 @@ export const stepConfigs: StepConfig[] = [
     title: "How much coding experience do you have?",
     hasSelection: (formData) => formData.codingExperience !== '',
     renderContent: (formData, handlers) => (
-      <div style={styles.radioGroup}>
+      <div className="mb-8 w-full max-w-150">
         {codingExperienceOptions.map((option) => (
           <label
             key={option}
-            style={{
-              ...styles.radioItem,
-              backgroundColor: formData.codingExperience === option ? '#10204D' : 'transparent',
-              borderColor: formData.codingExperience === option ? '#1D4177' : '#434F62',
-            }}
+            className={`
+              mb-4 flex min-w-100 cursor-pointer items-center rounded-lg
+              border-2 px-6 py-3.5 text-left font-inter text-lg text-brand-cool
+              transition-all duration-200
+              ${formData.codingExperience === option ? `
+                border-[#1D4177] bg-brand-input-navy
+              ` : `border-brand-border-b bg-transparent`}
+            `}
           >
             <input
               type="radio"
@@ -369,7 +437,11 @@ export const stepConfigs: StepConfig[] = [
                   handlers.setFormData(prev => ({ ...prev, codingExperience: option }));
                 }
               }}
-              style={styles.radio}
+              className="
+                relative mr-4 -ml-2.5 size-5 shrink-0 cursor-pointer
+                appearance-none rounded-full border-2 border-brand-cool
+                bg-transparent transition-all duration-200
+              "
             />
             {option}
           </label>
@@ -383,18 +455,19 @@ export const stepConfigs: StepConfig[] = [
     isLast: true,
     hasSelection: (formData) => formData.favoriteHobbies.length > 0 || formData.customHobbies.trim() !== '',
     renderContent: (formData, handlers) => (
-      <div style={styles.hobbiesMainContainer}>
-        <div style={styles.hobbiesContainer}>
+      <div className="mb-8 flex w-full max-w-175 flex-col items-center">
+        <div className="mb-8 flex max-w-175 flex-wrap justify-center gap-4">
           {hobbies.map((hobby) => (
             <button
               key={hobby}
-              className="hobby-button"
-              style={{
-                ...styles.hobbyButton,
-                backgroundColor: formData.favoriteHobbies.includes(hobby) ? '#10204D' : 'transparent',
-                borderColor: formData.favoriteHobbies.includes(hobby) ? '#1D4177' : '#434F62',
-                color: formData.favoriteHobbies.includes(hobby) ? '#FFFFFF' : '#AAAAC1',
-              }}
+              className={`
+                hobby-button min-w-30 cursor-pointer rounded-lg border-2
+                bg-transparent px-6 py-3.5 text-center font-inter text-base
+                transition-all duration-200
+                ${formData.favoriteHobbies.includes(hobby) ? `
+                  border-[#1D4177] bg-brand-input-navy text-white
+                ` : `border-brand-border text-brand-cool`}
+              `}
               onClick={() => handlers.handleHobbyToggle(hobby)}
             >
               {hobby}
@@ -403,9 +476,12 @@ export const stepConfigs: StepConfig[] = [
         </div>
 
         {/* Custom hobbies section */}
-        <div style={styles.customHobbiesSection}>
-          <h3 style={styles.formQuestion}>Want to be more specific?</h3>
-          <p style={styles.formSubtitle}>Add your own</p>
+        <div className="flex w-full max-w-125 flex-col items-center gap-2">
+          <h3 className="
+            mx-auto w-full text-center font-inter text-[34px] leading-relaxed
+            font-normal tracking-[.02em] text-white
+          ">Want to be more specific?</h3>
+          <p className="text-center font-inter text-[1.2rem] text-white">Add your own</p>
           <input
             type="text"
             placeholder="(e.g. violin, bird watching, spoken word poetry)"
@@ -413,7 +489,11 @@ export const stepConfigs: StepConfig[] = [
             onChange={(e) =>
               handlers.setFormData(prev => ({ ...prev, customHobbies: e.target.value }))
             }
-            style={styles.customHobbiesInput}
+            className="
+              w-full rounded-lg border-2 border-brand-border bg-transparent px-0
+              py-3.5 text-center font-inter text-base text-white transition-all
+              duration-200 outline-none
+            "
           />
         </div>
       </div>

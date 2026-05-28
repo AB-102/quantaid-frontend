@@ -57,7 +57,6 @@ const QuizProgressBar: React.FC<QuizProgressBarProps> = ({
     overflow: 'hidden',
   };
 
-  // Add a subtle shimmer effect
   const shimmerStyle: React.CSSProperties = {
     position: 'absolute',
     top: 0,
@@ -73,14 +72,6 @@ const QuizProgressBar: React.FC<QuizProgressBarProps> = ({
       <div style={fillStyle}>
         <div style={shimmerStyle} />
       </div>
-      <style>
-        {`
-          @keyframes shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
-          }
-        `}
-      </style>
     </div>
   );
 };

@@ -31,226 +31,80 @@ const Questions: React.FC<QuestionsProps> = ({
   showAnswersEnabled,
   questionStyles,
   optionStyles,
-}) => (
-  <div style={styles.container}>
-    <div style={styles.questionContainer}>
-      <h2 
-        style={{...styles.questionText, ...questionStyles}}
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        {question.question}
-      </h2>
+}) => {
+  const getOptionClasses = (idx: number): { bg: string; border: string } => {
+    if (!questionCompleted) {
+      if (selectedOption === idx) return { bg: 'bg-[#253462]', border: 'border-[#414D61]' };
+      if (wrongChoices.includes(idx)) return { bg: 'bg-[rgba(51,24,27,0.8)]', border: 'border-[#85131E]' };
+      return { bg: 'bg-transparent', border: 'border-brand-border' };
+    }
+    if (idx === question.correctAnswer) return { bg: 'bg-[rgba(29,55,35,0.8)]', border: 'border-[#407440]' };
+    if (wrongChoices.includes(idx)) return { bg: 'bg-[rgba(51,24,27,0.8)]', border: 'border-[#85131E]' };
+    return { bg: 'bg-transparent', border: 'border-[#414D61]' };
+  };
+
+  return (
+    <div className="w-full max-w-225 text-center">
+      <div className="mx-auto w-full max-w-225 text-center">
+        <h2
+          style={questionStyles}
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {question.question}
+        </h2>
+      </div>
+
+      <div className="relative mx-auto flex w-full max-w-150 flex-col gap-4" role="group" aria-label="Quiz answer options">
+        {/* Try Again Indicator */}
+        {showAnswersEnabled && wrongChoices.length > 0 && !questionCompleted && (
+          <div className="
+            absolute -top-12.5 left-0 z-10 rounded-2xl bg-[#A25313] px-2 py-1
+            font-inter text-base font-normal text-white
+          " role="status" aria-live="polite">
+            Try again
+          </div>
+        )}
+
+        {question.options.map((opt, idx) => {
+          const isWrongDisabled = !questionCompleted && wrongChoices.includes(idx);
+          const isDisabled = questionCompleted || isWrongDisabled;
+          const { bg, border } = getOptionClasses(idx);
+
+          return (
+            <button
+              key={`q${currentIndex}-opt${idx}`}
+              className={`
+                quiz-option appearance-none rounded-lg border-2 px-6 py-3.5
+                text-left transition-[background-color] duration-200
+                ${bg}
+                ${border}
+              `}
+              style={{ ...optionStyles, ...(isDisabled ? { cursor: 'not-allowed' } : {}) }}
+              disabled={isDisabled}
+              onClick={() => {
+                if (!isDisabled) {
+                  onSelectOption(idx);
+                }
+              }}
+              onKeyDown={(e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && !isDisabled) {
+                  e.preventDefault();
+                  onSelectOption(idx);
+                }
+              }}
+              aria-label={`Option ${idx + 1}: ${opt}`}
+              aria-pressed={selectedOption === idx}
+              aria-disabled={isDisabled}
+              tabIndex={isDisabled ? -1 : 0}
+            >
+              {opt}
+            </button>
+          );
+        })}
+      </div>
     </div>
-
-    <div style={styles.optionsContainer} role="group" aria-label="Quiz answer options">
-      {/* Try Again Indicator */}
-      {showAnswersEnabled && wrongChoices.length > 0 && !questionCompleted && (
-        <div style={styles.tryAgainIndicator} role="status" aria-live="polite">
-          Try again
-        </div>
-      )}
-
-      {question.options.map((opt, idx) => {
-        let btnStyle = { ...styles.optionButton };
-        let isDisabled = false;
-
-        // Determine the state and styling for each option
-        if (!questionCompleted) {
-          // Question is still in progress
-          if (selectedOption === idx) {
-            // Currently selected option (before submission or between attempts)
-            btnStyle = { ...btnStyle, ...styles.optionSelected };
-          } else if (wrongChoices.includes(idx)) {
-            // Previously chosen wrong option - mark as wrong and disable
-            btnStyle = { ...btnStyle, ...styles.optionWrong };
-            isDisabled = true;
-          }
-        } else {
-          // Question is completed (correct answer found or max attempts reached)
-          if (idx === question.correctAnswer) {
-            // Always highlight the correct answer when question is completed
-            btnStyle = { ...btnStyle, ...styles.optionCorrect };
-          } else if (wrongChoices.includes(idx)) {
-            // Mark all wrong choices as incorrect
-            btnStyle = { ...btnStyle, ...styles.optionWrong };
-          } else {
-            // Unselected options remain in default disabled state
-            btnStyle = { ...btnStyle, ...styles.optionUnselectedDisabled };
-          }
-          isDisabled = true; // All options are disabled when question is completed
-        }
-
-        // also apply font styles to each option button
-        btnStyle = { ...btnStyle, ...optionStyles };
-
-        // Override cursor style for disabled options
-        if (isDisabled) {
-          btnStyle = { ...btnStyle, cursor: 'not-allowed' };
-        }
-
-        return (
-          <button
-            key={`q${currentIndex}-opt${idx}`}
-            style={btnStyle}
-            disabled={isDisabled}
-            className="quiz-option"
-            onClick={() => {
-              if (!isDisabled) {
-                onSelectOption(idx);
-              }
-            }}
-            onKeyDown={(e) => {
-              if ((e.key === 'Enter' || e.key === ' ') && !isDisabled) {
-                e.preventDefault();
-                onSelectOption(idx);
-              }
-            }}
-            aria-label={`Option ${idx + 1}: ${opt}`}
-            aria-pressed={selectedOption === idx}
-            aria-disabled={isDisabled}
-            tabIndex={isDisabled ? -1 : 0}
-          >
-            {opt}
-          </button>
-        );
-      })}
-    </div>
-  </div>
-);
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    width: '100%',
-    maxWidth: 900,
-    textAlign: 'center',
-  },
-  questionContainer: {
-    width: '100%',
-    maxWidth: '900px',
-    margin: '0 auto',
-    textAlign: 'center',
-  },
-  optionsContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 16,
-    width: '100%',
-    maxWidth: '600px',
-    margin: '0 auto',
-    position: 'relative',
-  },
-  optionButton: {
-    padding: '14px 24px',
-    backgroundColor: 'transparent',
-    border: '2px solid #424E62',
-    borderRadius: 8,
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-    textAlign: 'left',
-    appearance: 'none',
-    opacity: 1,
-  },
-  optionSelected: {
-    backgroundColor: '#253462',
-    border: '2px solid #414D61',
-  },
-  optionCorrect: {
-    backgroundColor: 'rgba(29, 55, 35, 0.8)',
-    border: '2px solid #407440',
-  },
-  optionWrong: {
-    backgroundColor: 'rgba(51, 24, 27, 0.8)',
-    border: '2px solid #85131E',
-  },
-  optionUnselectedDisabled: {
-    backgroundColor: 'transparent',
-    border: '2px solid #414D61',
-    opacity: 1,
-  },
-  submitBtn: {
-    marginTop: 24,
-    padding: '12px 28px',
-    fontSize: '1.1rem',
-    backgroundColor: '#566395',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-  },
-  feedbackArea: {
-    marginTop: 32,
-  },
-  feedbackCorrect: {
-    color: '#00c800',
-    fontSize: '1.3rem',
-    fontWeight: 600,
-  },
-  feedbackWrong: {
-    color: '#c80000',
-    fontSize: '1.3rem',
-    fontWeight: 600,
-  },
-  answerBox: {
-    marginTop: 20,
-    padding: 16,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 6,
-    textAlign: 'left',
-  },
-  answerLabel: {
-    margin: 0,
-    marginBottom: 4,
-    fontWeight: 600,
-    color: '#FFFFFF',
-  },
-  answerText: {
-    margin: 0,
-    marginBottom: 8,
-    color: '#FFFFFF',
-    fontSize: '1.1rem',
-  },
-  explanationText: {
-    margin: 0,
-    color: '#DDDDDD',
-    fontSize: '0.95rem',
-    lineHeight: 1.4,
-  },
-  postSubmitBtns: {
-    marginTop: 24,
-    display: 'flex',
-    justifyContent: 'center',
-    gap: 16,
-  },
-  aiBtn: {
-    padding: '10px 20px',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-  },
-  nextBtn: {
-    padding: '10px 20px',
-    backgroundColor: '#566395',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-  },
-  tryAgainIndicator: {
-    position: 'absolute',
-    top: '-50px',
-    left: '0',
-    backgroundColor: '#A25313',
-    color: '#FFFFFF',
-    padding: '4px 8px',
-    borderRadius: 16,
-    fontSize: '16px',
-    fontWeight: '400',
-    fontFamily: "'Inter', sans-serif",
-    zIndex: 10,
-  },
+  );
 };
 
 export default Questions;

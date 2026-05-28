@@ -6,7 +6,6 @@ import {
   codingExperienceOptions,
   hobbies,
 } from '@/constants/formOptions';
-import { styles } from './ProfileStyles';
 
 interface ProfileFormFieldsProps {
   educationCategory: string;
@@ -48,72 +47,101 @@ const ProfileFormFields: React.FC<ProfileFormFieldsProps> = ({
   return (
     <>
       {/* Education Level */}
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>
+      <div className="mb-7">
+        <h3 className="
+          mt-0 mb-1.5 font-inter text-[17px] font-medium text-white
+        ">
           What is your education level?
-          <span style={styles.tooltip} title="Helps us tailor content difficulty to your level">&#9432;</span>
+          <span className="
+            ml-1.5 cursor-help align-middle text-sm text-[#6B7280]
+          " title="Helps us tailor content difficulty to your level">&#9432;</span>
         </h3>
 
-        <h4 style={styles.groupLabel}>HIGH SCHOOL</h4>
-        <div style={styles.radioRow}>
+        <h4 className="
+          mt-3 mb-2 font-inter text-[13px] font-semibold tracking-wider
+          text-brand-cool
+        ">HIGH SCHOOL</h4>
+        <div className="mb-1 flex flex-wrap gap-2.5">
           {highSchoolLevels.map(lvl => (
             <label
               key={lvl}
-              style={{
-                ...styles.radioItem,
-                backgroundColor: (educationCategory === 'HighSchool' && educationLevel === lvl) ? '#10204D' : 'transparent',
-                borderColor: (educationCategory === 'HighSchool' && educationLevel === lvl) ? '#1D4177' : '#434F62',
-              }}
+              className={`
+                flex cursor-pointer items-center rounded-lg border-2 px-4 py-2.5
+                font-inter text-sm whitespace-nowrap text-brand-cool
+                transition-all duration-200
+                ${(educationCategory === 'HighSchool' && educationLevel === lvl) ? `
+                  border-[#1D4177] bg-brand-input-navy
+                ` : `border-brand-border-b bg-transparent`}
+              `}
             >
               <input
                 type="radio"
                 checked={educationCategory === 'HighSchool' && educationLevel === lvl}
                 onChange={() => onEducationChange('HighSchool', lvl, '')}
-                style={styles.radio}
+                className="
+                  relative mr-2.5 size-4 shrink-0 cursor-pointer appearance-none
+                  rounded-full border-2 border-brand-cool bg-transparent
+                  transition-all duration-200
+                "
               />
               {lvl}
             </label>
           ))}
         </div>
 
-        <h4 style={styles.groupLabel}>COLLEGE</h4>
-        <div style={styles.radioRow}>
+        <h4 className="
+          mt-3 mb-2 font-inter text-[13px] font-semibold tracking-wider
+          text-brand-cool
+        ">COLLEGE</h4>
+        <div className="mb-1 flex flex-wrap gap-2.5">
           {collegeLevels.map(lvl => (
             <label
               key={lvl}
-              style={{
-                ...styles.radioItem,
-                backgroundColor: (educationCategory === 'College' && educationLevel === lvl) ? '#10204D' : 'transparent',
-                borderColor: (educationCategory === 'College' && educationLevel === lvl) ? '#1D4177' : '#434F62',
-              }}
+              className={`
+                flex cursor-pointer items-center rounded-lg border-2 px-4 py-2.5
+                font-inter text-sm whitespace-nowrap text-brand-cool
+                transition-all duration-200
+                ${(educationCategory === 'College' && educationLevel === lvl) ? `
+                  border-[#1D4177] bg-brand-input-navy
+                ` : `border-brand-border-b bg-transparent`}
+              `}
             >
               <input
                 type="radio"
                 checked={educationCategory === 'College' && educationLevel === lvl}
                 onChange={() => onEducationChange('College', lvl, '')}
-                style={styles.radio}
+                className="
+                  relative mr-2.5 size-4 shrink-0 cursor-pointer appearance-none
+                  rounded-full border-2 border-brand-cool bg-transparent
+                  transition-all duration-200
+                "
               />
               {lvl}
             </label>
           ))}
         </div>
 
-        <div style={styles.radioRow}>
+        <div className="mb-1 flex flex-wrap gap-2.5">
           <label
-            style={{
-              ...styles.radioItem,
-              ...styles.radioItemExpanded,
-              backgroundColor: educationCategory === 'Other' ? '#10204D' : 'transparent',
-              borderColor: educationCategory === 'Other' ? '#1D4177' : '#434F62',
-            }}
+            className={`
+              flex cursor-pointer items-start rounded-lg border-2 px-4 py-3
+              font-inter text-sm text-brand-cool transition-all duration-200
+              ${educationCategory === 'Other' ? `
+                border-[#1D4177] bg-brand-input-navy
+              ` : `border-brand-border-b bg-transparent`}
+            `}
           >
             <input
               type="radio"
               checked={educationCategory === 'Other'}
               onChange={() => onEducationChange('Other', '', otherEducationLevel)}
-              style={styles.radio}
+              className="
+                relative mr-2.5 size-4 shrink-0 cursor-pointer appearance-none
+                rounded-full border-2 border-brand-cool bg-transparent
+                transition-all duration-200
+              "
             />
-            <div style={styles.optionContent}>
+            <div className="flex w-full flex-col gap-1.5">
               <span>Other (please specify)</span>
               {educationCategory === 'Other' && (
                 <input
@@ -121,7 +149,11 @@ const ProfileFormFields: React.FC<ProfileFormFieldsProps> = ({
                   placeholder="Type here..."
                   value={otherEducationLevel}
                   onChange={e => onEducationChange('Other', '', e.target.value)}
-                  style={styles.inlineInput}
+                  className="
+                    w-full border-0 border-b-2 border-brand-border
+                    bg-transparent px-0 py-1.5 font-inter text-sm text-white
+                    transition-all duration-200 outline-none
+                  "
                   autoFocus
                 />
               )}
@@ -131,31 +163,40 @@ const ProfileFormFields: React.FC<ProfileFormFieldsProps> = ({
       </div>
 
       {/* Subjects */}
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>
+      <div className="mb-7">
+        <h3 className="
+          mt-0 mb-1.5 font-inter text-[17px] font-medium text-white
+        ">
           Subjects studied or experienced
-          <span style={styles.tooltip} title="Helps us understand your background knowledge">&#9432;</span>
+          <span className="
+            ml-1.5 cursor-help align-middle text-sm text-[#6B7280]
+          " title="Helps us understand your background knowledge">&#9432;</span>
         </h3>
-        <p style={styles.sectionSubtitle}>(Select all that apply)</p>
-        <div style={styles.checkList}>
+        <p className="mt-0 mb-3 font-inter text-[13px] text-brand-cool">(Select all that apply)</p>
+        <div className="flex flex-col gap-2.5">
           {subjects.map(subj =>
             subj === 'Other (please specify)' ? (
               <label
                 key={subj}
-                style={{
-                  ...styles.checkItem,
-                  ...styles.checkItemExpanded,
-                  backgroundColor: subjectsStudied.includes(subj) ? '#10204D' : 'transparent',
-                  borderColor: subjectsStudied.includes(subj) ? '#1D4177' : '#434F62',
-                }}
+                className={`
+                  flex cursor-pointer items-start rounded-lg border-2 px-4 py-3
+                  font-inter text-sm text-brand-cool transition-all duration-200
+                  ${subjectsStudied.includes(subj) ? `
+                    border-[#1D4177] bg-brand-input-navy
+                  ` : `border-brand-border-b bg-transparent`}
+                `}
               >
                 <input
                   type="checkbox"
                   checked={subjectsStudied.includes(subj)}
                   onChange={() => onSubjectToggle(subj)}
-                  style={styles.checkbox}
+                  className="
+                    relative mr-2.5 size-4 shrink-0 cursor-pointer
+                    appearance-none rounded-sm border-2 border-brand-cool
+                    bg-transparent transition-all duration-200
+                  "
                 />
-                <div style={styles.optionContent}>
+                <div className="flex w-full flex-col gap-1.5">
                   <span>Other (please specify)</span>
                   {subjectsStudied.includes(subj) && (
                     <input
@@ -163,7 +204,11 @@ const ProfileFormFields: React.FC<ProfileFormFieldsProps> = ({
                       placeholder="Type here..."
                       value={otherSubject}
                       onChange={e => onOtherSubjectChange(e.target.value)}
-                      style={styles.inlineInput}
+                      className="
+                        w-full border-0 border-b-2 border-brand-border
+                        bg-transparent px-0 py-1.5 font-inter text-sm text-white
+                        transition-all duration-200 outline-none
+                      "
                       autoFocus
                     />
                   )}
@@ -172,17 +217,24 @@ const ProfileFormFields: React.FC<ProfileFormFieldsProps> = ({
             ) : (
               <label
                 key={subj}
-                style={{
-                  ...styles.checkItem,
-                  backgroundColor: subjectsStudied.includes(subj) ? '#10204D' : 'transparent',
-                  borderColor: subjectsStudied.includes(subj) ? '#1D4177' : '#434F62',
-                }}
+                className={`
+                  flex cursor-pointer items-center rounded-lg border-2 px-4
+                  py-2.5 font-inter text-sm text-brand-cool transition-all
+                  duration-200
+                  ${subjectsStudied.includes(subj) ? `
+                    border-[#1D4177] bg-brand-input-navy
+                  ` : `border-brand-border-b bg-transparent`}
+                `}
               >
                 <input
                   type="checkbox"
                   checked={subjectsStudied.includes(subj)}
                   onChange={() => onSubjectToggle(subj)}
-                  style={styles.checkbox}
+                  className="
+                    relative mr-2.5 size-4 shrink-0 cursor-pointer
+                    appearance-none rounded-sm border-2 border-brand-cool
+                    bg-transparent transition-all duration-200
+                  "
                 />
                 {subj}
               </label>
@@ -192,26 +244,37 @@ const ProfileFormFields: React.FC<ProfileFormFieldsProps> = ({
       </div>
 
       {/* Coding Experience */}
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>
+      <div className="mb-7">
+        <h3 className="
+          mt-0 mb-1.5 font-inter text-[17px] font-medium text-white
+        ">
           How much coding experience do you have?
-          <span style={styles.tooltip} title="Helps us adjust code examples and technical depth">&#9432;</span>
+          <span className="
+            ml-1.5 cursor-help align-middle text-sm text-[#6B7280]
+          " title="Helps us adjust code examples and technical depth">&#9432;</span>
         </h3>
-        <div style={styles.radioGroup}>
+        <div className="mt-2">
           {codingExperienceOptions.map(opt => (
             <label
               key={opt}
-              style={{
-                ...styles.radioItemFull,
-                backgroundColor: codingExperience === opt ? '#10204D' : 'transparent',
-                borderColor: codingExperience === opt ? '#1D4177' : '#434F62',
-              }}
+              className={`
+                mb-2 flex cursor-pointer items-center rounded-lg border-2 px-4
+                py-2.5 font-inter text-sm text-brand-cool transition-all
+                duration-200
+                ${codingExperience === opt ? `
+                  border-[#1D4177] bg-brand-input-navy
+                ` : `border-brand-border-b bg-transparent`}
+              `}
             >
               <input
                 type="radio"
                 checked={codingExperience === opt}
                 onChange={() => onCodingExperienceChange(opt)}
-                style={styles.radio}
+                className="
+                  relative mr-2.5 size-4 shrink-0 cursor-pointer appearance-none
+                  rounded-full border-2 border-brand-cool bg-transparent
+                  transition-all duration-200
+                "
               />
               {opt}
             </label>
@@ -220,63 +283,80 @@ const ProfileFormFields: React.FC<ProfileFormFieldsProps> = ({
       </div>
 
       {/* Hobbies */}
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>
+      <div className="mb-7">
+        <h3 className="
+          mt-0 mb-1.5 font-inter text-[17px] font-medium text-white
+        ">
           Your hobbies &amp; interests
-          <span style={styles.tooltip} title="Listed hobbies can influence the personalization of your AI responses when the toggle below is enabled">&#9432;</span>
+          <span className="
+            ml-1.5 cursor-help align-middle text-sm text-[#6B7280]
+          " title="Listed hobbies can influence the personalization of your AI responses when the toggle below is enabled">&#9432;</span>
         </h3>
-        <p style={styles.sectionSubtitle}>(Select all that apply)</p>
-        <div style={styles.hobbyGrid}>
+        <p className="mt-0 mb-3 font-inter text-[13px] text-brand-cool">(Select all that apply)</p>
+        <div className="flex flex-wrap gap-2.5">
           {hobbies.map(h => (
             <button
               key={h}
               onClick={() => onHobbyToggle(h)}
-              style={{
-                ...styles.hobbyBtn,
-                backgroundColor: favoriteHobbies.includes(h) ? '#10204D' : 'transparent',
-                borderColor: favoriteHobbies.includes(h) ? '#1D4177' : '#434F62',
-                color: favoriteHobbies.includes(h) ? '#FFFFFF' : '#AAAAC1',
-              }}
+              className={`
+                cursor-pointer rounded-lg border-2 bg-transparent px-4.5 py-2
+                font-inter text-sm transition-all duration-200
+                ${favoriteHobbies.includes(h) ? `
+                  border-[#1D4177] bg-brand-input-navy text-white
+                ` : `border-brand-border-b text-brand-cool`}
+              `}
             >
               {h}
             </button>
           ))}
         </div>
-        <div style={styles.customHobbiesSection}>
-          <p style={{ ...styles.sectionSubtitle, marginTop: 12 }}>Want to be more specific? Add your own</p>
+        <div className="mt-2 flex w-full flex-col items-center">
+          <p className="my-3 font-inter text-[13px] text-brand-cool">Want to be more specific? Add your own</p>
           <input
             type="text"
             placeholder="(e.g. violin, bird watching, spoken word poetry)"
             value={customHobbies}
             onChange={e => onCustomHobbiesChange(e.target.value)}
-            style={styles.customHobbiesInput}
+            className="
+              w-full rounded-lg border-2 border-brand-border bg-transparent px-0
+              py-2.5 text-center font-inter text-sm text-white transition-all
+              duration-200 outline-none
+            "
           />
         </div>
 
         {/* Personalization toggle */}
-        <div style={{ marginTop: 20 }}>
-          <h3 style={styles.sectionTitle}>
+        <div className="mt-5">
+          <h3 className="
+            mt-0 mb-1.5 font-inter text-[17px] font-medium text-white
+          ">
             Allow hobby personalization
-            <span style={styles.tooltip} title="AI responses will use your hobbies to create relatable analogies">&#9432;</span>
+            <span className="
+              ml-1.5 cursor-help align-middle text-sm text-[#6B7280]
+            " title="AI responses will use your hobbies to create relatable analogies">&#9432;</span>
           </h3>
-          <label style={styles.toggleRowFlat}>
-            <span style={{ color: '#AAAAC1', fontSize: 13, fontFamily: "'Inter', sans-serif" }}>
-              {hobbyPersonalization ? 'Enabled \u2014 AI uses your hobbies for analogies' : 'Disabled \u2014 AI uses generic examples'}
+          <label className="
+            mt-1.5 flex cursor-pointer items-center justify-between
+          ">
+            <span className="font-inter text-[13px] text-brand-cool">
+              {hobbyPersonalization ? 'Enabled — AI uses your hobbies for analogies' : 'Disabled — AI uses generic examples'}
             </span>
             <button
               type="button"
               aria-pressed={hobbyPersonalization}
               onClick={onHobbyPersonalizationToggle}
-              style={{
-                ...styles.toggleTrack,
-                backgroundColor: hobbyPersonalization ? '#3B89FF' : '#434F62',
-              }}
+              className="
+                relative h-6 w-10.5 shrink-0 cursor-pointer rounded-xl
+                transition-[background-color] duration-200
+              "
+              style={{ backgroundColor: hobbyPersonalization ? '#3B89FF' : '#434F62' }}
             >
               <div
-                style={{
-                  ...styles.toggleThumb,
-                  transform: hobbyPersonalization ? 'translateX(18px)' : 'translateX(0)',
-                }}
+                className="
+                  absolute top-0.75 left-0.75 size-4.5 rounded-full bg-white
+                  transition-[transform] duration-200
+                "
+                style={{ transform: hobbyPersonalization ? 'translateX(18px)' : 'translateX(0)' }}
               />
             </button>
           </label>

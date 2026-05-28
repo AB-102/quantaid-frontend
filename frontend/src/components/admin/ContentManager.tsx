@@ -51,6 +51,15 @@ const IMAGE_OPTIONS = [
   { value: 'lesson-2', label: 'Quantum Green' },
 ];
 
+// Shared class strings
+const inputCls  = 'py-2 px-2.5 bg-brand-bg border border-brand-card rounded text-[#E5E7EB] text-[13px] font-inter box-border';
+const iconBtnCls = 'bg-transparent border-none text-[#9DA7B7] cursor-pointer text-xs py-0.5 px-1.5 rounded font-inter';
+const saveBtnCls = 'py-2 px-4.5 bg-[#1a3b2a] text-success border border-[#166534] rounded-md cursor-pointer text-[13px] font-semibold font-inter';
+const cancelBtnCls = 'py-2 px-3.5 bg-brand-card text-[#9DA7B7] border border-brand-card rounded-md cursor-pointer text-[13px] font-inter';
+const actionBtnCls = 'py-2 px-3.5 bg-brand-card text-[#9DA7B7] border border-brand-border-dark rounded-md cursor-pointer text-[13px] font-medium font-inter whitespace-nowrap';
+const editContentBtnCls = 'py-1 px-2.5 bg-[#1e3a5f] text-[#60a5fa] border border-[#2563eb] rounded cursor-pointer text-[11px] font-medium font-inter';
+const addBtnCls = 'py-1 px-3 bg-brand-card text-[#9DA7B7] border border-brand-border-dark rounded cursor-pointer text-xs font-inter mt-1';
+
 const ContentManager: React.FC = () => {
   const [config, setConfig] = useState<DashboardConfig | null>(null);
   const [contentView, setContentView] = useState<ContentView>('overview');
@@ -273,7 +282,6 @@ const ContentManager: React.FC = () => {
     if (!config) return;
     const course = getCourse(courseId);
     if (!course) return;
-    // Find next available topic id
     const allTopicIds = config.courses.flatMap(c => c.concepts.flatMap(con => con.topics.map(t => t.id)));
     const maxTopicId = allTopicIds.length > 0 ? Math.max(...allTopicIds) : -1;
     const newTopic: Topic = {
@@ -348,7 +356,7 @@ const ContentManager: React.FC = () => {
 
   // === OVERVIEW VIEW ===
   if (!config) {
-    return <p style={{ color: '#9DA7B7' }}>Loading dashboard config...</p>;
+    return <p className="text-[#9DA7B7]">Loading dashboard config...</p>;
   }
 
   const unassigned = getUnassignedCourses();
@@ -356,12 +364,12 @@ const ContentManager: React.FC = () => {
   return (
     <div>
       {/* Top bar */}
-      <div style={s.topBar}>
-        <h3 style={s.pageTitle}>Dashboard Structure</h3>
-        <div style={s.topBarActions}>
-          <button onClick={() => setShowNewSection(true)} style={s.actionBtn}>+ Section</button>
-          <button onClick={() => setShowNewCourse(true)} style={s.actionBtn}>+ Course</button>
-          <button onClick={() => { void handleSave(); }} disabled={saving} style={s.saveBtn}>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="m-0 font-inter text-lg font-semibold text-[#F9FAFB]">Dashboard Structure</h3>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowNewSection(true)} className={actionBtnCls}>+ Section</button>
+          <button onClick={() => setShowNewCourse(true)} className={actionBtnCls}>+ Course</button>
+          <button onClick={() => { void handleSave(); }} disabled={saving} className={saveBtnCls}>
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
@@ -369,175 +377,241 @@ const ContentManager: React.FC = () => {
 
       {/* Message */}
       {message && (
-        <div style={{ padding: '8px 14px', marginBottom: 12, borderRadius: 6, fontSize: 13, backgroundColor: message.startsWith('Error') ? '#3b1a1a' : '#1a3b2a', color: message.startsWith('Error') ? '#fa6060' : '#4ade80' }}>
+        <div className={`
+          mb-3 rounded-md px-3.5 py-2 text-[13px]
+          ${message.startsWith('Error') ? `bg-[#3b1a1a] text-error` : `
+            bg-[#1a3b2a] text-success
+          `}
+        `}>
           {message}
         </div>
       )}
 
       {/* New section form */}
       {showNewSection && (
-        <div style={s.formBar}>
+        <div className="
+          mb-3 flex flex-wrap items-center gap-2 rounded-md border
+          border-brand-card bg-brand-panel px-3.5 py-3
+        ">
           <input
             value={newSectionTitle}
             onChange={e => setNewSectionTitle(e.target.value)}
             placeholder="Section title..."
-            style={{ ...s.input, flex: 1 }}
+            className={`
+              ${inputCls}
+              flex-1
+            `}
             onKeyDown={e => e.key === 'Enter' && addSection()}
             autoFocus
           />
-          <button onClick={addSection} style={s.saveBtn} disabled={!newSectionTitle.trim()}>Create</button>
-          <button onClick={() => setShowNewSection(false)} style={s.cancelBtn}>Cancel</button>
+          <button onClick={addSection} className={saveBtnCls} disabled={!newSectionTitle.trim()}>Create</button>
+          <button onClick={() => setShowNewSection(false)} className={cancelBtnCls}>Cancel</button>
         </div>
       )}
 
       {/* New course form */}
       {showNewCourse && (
-        <div style={s.formBar}>
+        <div className="
+          mb-3 flex flex-wrap items-center gap-2 rounded-md border
+          border-brand-card bg-brand-panel px-3.5 py-3
+        ">
           <input
             value={newCourseTitle}
             onChange={e => setNewCourseTitle(e.target.value)}
             placeholder="Course title..."
-            style={{ ...s.input, flex: 1 }}
+            className={`
+              ${inputCls}
+              flex-1
+            `}
             autoFocus
           />
           <input
             value={newCourseDesc}
             onChange={e => setNewCourseDesc(e.target.value)}
             placeholder="Description..."
-            style={{ ...s.input, flex: 1 }}
+            className={`
+              ${inputCls}
+              flex-1
+            `}
           />
           <select
             value={newCourseSection}
             onChange={e => setNewCourseSection(e.target.value)}
-            style={{ ...s.input, width: 160 }}
+            className={`
+              ${inputCls}
+              w-40
+            `}
           >
             <option value="">No section</option>
             {config.sections.map(sec => (
               <option key={sec.id} value={sec.id}>{sec.title}</option>
             ))}
           </select>
-          <button onClick={addCourse} style={s.saveBtn} disabled={!newCourseTitle.trim()}>Create</button>
-          <button onClick={() => setShowNewCourse(false)} style={s.cancelBtn}>Cancel</button>
+          <button onClick={addCourse} className={saveBtnCls} disabled={!newCourseTitle.trim()}>Create</button>
+          <button onClick={() => setShowNewCourse(false)} className={cancelBtnCls}>Cancel</button>
         </div>
       )}
 
       {/* Sections */}
       {config.sections.map((section, sIdx) => (
-        <div key={section.id} style={s.sectionCard}>
+        <div key={section.id} className="
+          mb-4 rounded-lg border border-brand-card bg-[#0d1a30] px-4 py-3.5
+        ">
           {/* Section header */}
-          <div style={s.sectionHeader}>
+          <div className="mb-2.5 flex items-center justify-between gap-2">
             {editingSectionId === section.id ? (
               <input
                 value={editingSectionTitle}
                 onChange={e => setEditingSectionTitle(e.target.value)}
                 onBlur={renameSectionSave}
                 onKeyDown={e => e.key === 'Enter' && renameSectionSave()}
-                style={{ ...s.input, fontSize: 15, fontWeight: 600, flex: 1 }}
+                className={`
+                  ${inputCls}
+                  flex-1 text-[15px] font-semibold
+                `}
                 autoFocus
               />
             ) : (
               <h4
-                style={s.sectionTitle}
+                className="
+                  m-0 cursor-pointer font-inter text-[15px] font-semibold
+                  text-[#E5E7EB]
+                "
                 onDoubleClick={() => renameSectionStart(section)}
                 title="Double-click to rename"
               >
                 {section.title}
               </h4>
             )}
-            <div style={s.sectionActions}>
-              <span style={s.courseCount}>{section.courses.length} course(s)</span>
-              <button onClick={() => moveSection(sIdx, -1)} disabled={sIdx === 0} style={s.iconBtn} title="Move up">&#9650;</button>
-              <button onClick={() => moveSection(sIdx, 1)} disabled={sIdx === config.sections.length - 1} style={s.iconBtn} title="Move down">&#9660;</button>
-              <button onClick={() => renameSectionStart(section)} style={s.iconBtn} title="Rename">&#9998;</button>
-              <button onClick={() => removeSection(section.id)} style={{ ...s.iconBtn, color: '#fa6060' }} title="Remove section">&#10005;</button>
+            <div className="flex items-center gap-1">
+              <span className="mr-2 text-xs text-[#6B7280]">{section.courses.length} course(s)</span>
+              <button onClick={() => moveSection(sIdx, -1)} disabled={sIdx === 0} className={iconBtnCls} title="Move up">&#9650;</button>
+              <button onClick={() => moveSection(sIdx, 1)} disabled={sIdx === config.sections.length - 1} className={iconBtnCls} title="Move down">&#9660;</button>
+              <button onClick={() => renameSectionStart(section)} className={iconBtnCls} title="Rename">&#9998;</button>
+              <button onClick={() => removeSection(section.id)} className={`
+                ${iconBtnCls}
+                text-error
+              `} title="Remove section">&#10005;</button>
             </div>
           </div>
 
           {/* Course cards in section */}
           {section.courses.length === 0 && (
-            <p style={s.emptyText}>No courses in this section. Add courses or move them here.</p>
+            <p className="mt-2 text-[13px] text-[#6B7280] italic">No courses in this section. Add courses or move them here.</p>
           )}
           {section.courses.map((courseId, cIdx) => {
             const course = getCourse(courseId);
-            if (!course) return <div key={courseId} style={s.courseCard}><span style={{ color: '#fa6060' }}>Course {courseId} not found</span></div>;
+            if (!course) return (
+              <div key={courseId} className="
+                mb-1.5 rounded-md border border-brand-card bg-brand-panel px-3
+                py-2.5
+              ">
+                <span className="text-error">Course {courseId} not found</span>
+              </div>
+            );
             const isExpanded = expandedCourses.has(courseId);
             const isEditing = editingCardId === courseId;
 
             return (
-              <div key={courseId} style={s.courseCard}>
+              <div key={courseId} className="
+                mb-1.5 rounded-md border border-brand-card bg-brand-panel px-3
+                py-2.5
+              ">
                 {/* Course card header */}
-                <div style={s.courseHeader}>
-                  <button onClick={() => toggleExpand(courseId)} style={s.expandBtn}>
+                <div className="flex items-start gap-2">
+                  <button onClick={() => toggleExpand(courseId)} className="
+                    mt-0.5 cursor-pointer border-none bg-transparent px-1 py-0.5
+                    font-inter text-sm text-[#9DA7B7]
+                  ">
                     {isExpanded ? '▾' : '▸'}
                   </button>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="min-w-0 flex-1">
                     {isEditing ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        <input
-                          value={course.title}
-                          onChange={e => updateCourse(courseId, { title: e.target.value })}
-                          style={{ ...s.input, fontWeight: 600 }}
-                        />
-                        <input
-                          value={course.description}
-                          onChange={e => updateCourse(courseId, { description: e.target.value })}
-                          style={s.input}
-                          placeholder="Description..."
-                        />
-                        <select
-                          value={course.image}
-                          onChange={e => updateCourse(courseId, { image: e.target.value })}
-                          style={{ ...s.input, width: 180 }}
-                        >
+                      <div className="flex flex-col gap-1.5">
+                        <input value={course.title} onChange={e => updateCourse(courseId, { title: e.target.value })} className={`
+                          ${inputCls}
+                          font-semibold
+                        `} />
+                        <input value={course.description} onChange={e => updateCourse(courseId, { description: e.target.value })} className={inputCls} placeholder="Description..." />
+                        <select value={course.image} onChange={e => updateCourse(courseId, { image: e.target.value })} className={`
+                          ${inputCls}
+                          w-45
+                        `}>
                           {IMAGE_OPTIONS.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                           ))}
                         </select>
-                        <button onClick={() => setEditingCardId(null)} style={{ ...s.cancelBtn, alignSelf: 'flex-start' }}>Done</button>
+                        <button onClick={() => setEditingCardId(null)} className={`
+                          ${cancelBtnCls}
+                          self-start
+                        `}>Done</button>
                       </div>
                     ) : (
                       <>
-                        <span style={s.courseTitle}>{course.title}</span>
-                        <span style={s.courseDesc}>{course.description}</span>
+                        <span className="
+                          block font-inter text-sm font-semibold text-[#E5E7EB]
+                        ">{course.title}</span>
+                        <span className="
+                          mt-0.5 block font-inter text-xs text-[#6B7280]
+                        ">{course.description}</span>
                       </>
                     )}
                   </div>
-                  <div style={s.courseActions}>
-                    <button onClick={() => moveCourseInSection(section.id, cIdx, -1)} disabled={cIdx === 0} style={s.iconBtn} title="Move up">&#9650;</button>
-                    <button onClick={() => moveCourseInSection(section.id, cIdx, 1)} disabled={cIdx === section.courses.length - 1} style={s.iconBtn} title="Move down">&#9660;</button>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button onClick={() => moveCourseInSection(section.id, cIdx, -1)} disabled={cIdx === 0} className={iconBtnCls} title="Move up">&#9650;</button>
+                    <button onClick={() => moveCourseInSection(section.id, cIdx, 1)} disabled={cIdx === section.courses.length - 1} className={iconBtnCls} title="Move down">&#9660;</button>
                     <select
                       value={section.id}
                       onChange={e => moveCourseToSection(courseId, section.id, e.target.value)}
-                      style={{ ...s.input, width: 120, fontSize: 11, padding: '2px 4px' }}
+                      className={`
+                        ${inputCls}
+                        w-30 px-1 py-0.5 text-[11px]
+                      `}
                       title="Move to section"
                     >
                       {config.sections.map(sec => (
                         <option key={sec.id} value={sec.id}>{sec.title}</option>
                       ))}
                     </select>
-                    <button onClick={() => setEditingCardId(isEditing ? null : courseId)} style={s.iconBtn} title="Edit card">&#9998;</button>
-                    <button onClick={() => openLessonEditor(courseId)} style={s.editContentBtn} title="Edit lesson content">Content</button>
-                    <button onClick={() => removeCourse(courseId)} style={{ ...s.iconBtn, color: '#fa6060' }} title="Delete course">&#10005;</button>
+                    <button onClick={() => setEditingCardId(isEditing ? null : courseId)} className={iconBtnCls} title="Edit card">&#9998;</button>
+                    <button onClick={() => openLessonEditor(courseId)} className={editContentBtnCls} title="Edit lesson content">Content</button>
+                    <button onClick={() => removeCourse(courseId)} className={`
+                      ${iconBtnCls}
+                      text-error
+                    `} title="Delete course">&#10005;</button>
                   </div>
                 </div>
 
                 {/* Expanded: concepts & topics */}
                 {isExpanded && (
-                  <div style={s.conceptsArea}>
+                  <div className="mt-2.5 ml-5 border-l-2 border-brand-card pl-3">
                     {course.concepts.map(concept => (
-                      <div key={concept.id} style={s.conceptCard}>
-                        <div style={s.conceptHeader}>
+                      <div key={concept.id} className="
+                        mb-2 rounded-sm border border-[#1e2d4a] bg-[#0d1a30]
+                        px-2.5 py-2
+                      ">
+                        <div className="mb-1.5 flex items-center gap-2">
                           <input
                             value={concept.title}
                             onChange={e => updateConcept(courseId, concept.id, { title: e.target.value })}
-                            style={{ ...s.input, flex: 1, fontWeight: 500, fontSize: 13 }}
+                            className={`
+                              ${inputCls}
+                              flex-1 text-[13px] font-medium
+                            `}
                             placeholder="Concept title..."
                           />
-                          <button onClick={() => removeConcept(courseId, concept.id)} style={{ ...s.iconBtn, color: '#fa6060' }} title="Remove concept">&#10005;</button>
+                          <button onClick={() => removeConcept(courseId, concept.id)} className={`
+                            ${iconBtnCls}
+                            text-error
+                          `} title="Remove concept">&#10005;</button>
                         </div>
                         {concept.topics.map(topic => (
-                          <div key={topic.id} style={s.topicRow}>
-                            <label style={s.implementedLabel} title="Is this topic implemented?">
+                          <div key={topic.id} className="
+                            mb-1 flex items-center gap-1.5 pl-1
+                          ">
+                            <label className="
+                              flex shrink-0 cursor-pointer items-center
+                            " title="Is this topic implemented?">
                               <input
                                 type="checkbox"
                                 checked={topic.implemented}
@@ -547,24 +621,37 @@ const ContentManager: React.FC = () => {
                             <input
                               value={topic.title}
                               onChange={e => updateTopic(courseId, concept.id, topic.id, { title: e.target.value })}
-                              style={{ ...s.input, flex: 1, fontSize: 12 }}
+                              className={`
+                                ${inputCls}
+                                flex-1 text-xs
+                              `}
                               placeholder="Topic title..."
                             />
                             <input
                               value={topic.description}
                               onChange={e => updateTopic(courseId, concept.id, topic.id, { description: e.target.value })}
-                              style={{ ...s.input, flex: 1, fontSize: 12 }}
+                              className={`
+                                ${inputCls}
+                                flex-1 text-xs
+                              `}
                               placeholder="Description..."
                             />
-                            <span style={s.topicIdBadge}>ID: {topic.id}</span>
-                            <button onClick={() => openLessonEditor(topic.id)} style={s.editContentBtn} title="Edit this topic's lesson content">Edit</button>
-                            <button onClick={() => removeTopic(courseId, concept.id, topic.id)} style={{ ...s.iconBtn, color: '#fa6060' }}>&#10005;</button>
+                            <span className="
+                              shrink-0 rounded-sm bg-[#0d1a30] px-1.5 py-0.5
+                              font-inter text-[10px] whitespace-nowrap
+                              text-[#6B7280]
+                            ">ID: {topic.id}</span>
+                            <button onClick={() => openLessonEditor(topic.id)} className={editContentBtnCls} title="Edit this topic's lesson content">Edit</button>
+                            <button onClick={() => removeTopic(courseId, concept.id, topic.id)} className={`
+                              ${iconBtnCls}
+                              text-error
+                            `}>&#10005;</button>
                           </div>
                         ))}
-                        <button onClick={() => addTopic(courseId, concept.id)} style={s.addBtn}>+ Topic</button>
+                        <button onClick={() => addTopic(courseId, concept.id)} className={addBtnCls}>+ Topic</button>
                       </div>
                     ))}
-                    <button onClick={() => addConcept(courseId)} style={s.addBtn}>+ Concept</button>
+                    <button onClick={() => addConcept(courseId)} className={addBtnCls}>+ Concept</button>
                   </div>
                 )}
               </div>
@@ -575,18 +662,27 @@ const ContentManager: React.FC = () => {
 
       {/* Unassigned courses */}
       {unassigned.length > 0 && (
-        <div style={{ ...s.sectionCard, borderColor: '#5f4e1e' }}>
-          <div style={s.sectionHeader}>
-            <h4 style={{ ...s.sectionTitle, color: '#f5c542' }}>Unassigned Courses</h4>
-            <span style={s.courseCount}>{unassigned.length} course(s) not in any section</span>
+        <div className="
+          mb-4 rounded-lg border border-[#5f4e1e] bg-[#0d1a30] px-4 py-3.5
+        ">
+          <div className="mb-2.5 flex items-center justify-between gap-2">
+            <h4 className="
+              m-0 font-inter text-[15px] font-semibold text-[#f5c542]
+            ">Unassigned Courses</h4>
+            <span className="text-xs text-[#6B7280]">{unassigned.length} course(s) not in any section</span>
           </div>
           {unassigned.map(course => (
-            <div key={course.id} style={s.courseCard}>
-              <div style={s.courseHeader}>
-                <div style={{ flex: 1 }}>
-                  <span style={s.courseTitle}>{course.title}</span>
+            <div key={course.id} className="
+              mb-1.5 rounded-md border border-brand-card bg-brand-panel px-3
+              py-2.5
+            ">
+              <div className="flex items-start gap-2">
+                <div className="flex-1">
+                  <span className="
+                    block font-inter text-sm font-semibold text-[#E5E7EB]
+                  ">{course.title}</span>
                 </div>
-                <div style={s.courseActions}>
+                <div className="flex shrink-0 items-center gap-1">
                   <select
                     value=""
                     onChange={e => {
@@ -598,14 +694,20 @@ const ContentManager: React.FC = () => {
                         ),
                       });
                     }}
-                    style={{ ...s.input, width: 140, fontSize: 11 }}
+                    className={`
+                      ${inputCls}
+                      w-35 text-[11px]
+                    `}
                   >
                     <option value="">Assign to section...</option>
                     {config.sections.map(sec => (
                       <option key={sec.id} value={sec.id}>{sec.title}</option>
                     ))}
                   </select>
-                  <button onClick={() => removeCourse(course.id)} style={{ ...s.iconBtn, color: '#fa6060' }}>&#10005;</button>
+                  <button onClick={() => removeCourse(course.id)} className={`
+                    ${iconBtnCls}
+                    text-error
+                  `}>&#10005;</button>
                 </div>
               </div>
             </div>
@@ -614,242 +716,10 @@ const ContentManager: React.FC = () => {
       )}
 
       {config.sections.length === 0 && unassigned.length === 0 && (
-        <p style={s.emptyText}>No sections or courses yet. Use the buttons above to get started.</p>
+        <p className="mt-2 text-[13px] text-[#6B7280] italic">No sections or courses yet. Use the buttons above to get started.</p>
       )}
     </div>
   );
-};
-
-// --- Styles ---
-const s: Record<string, React.CSSProperties> = {
-  topBar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  pageTitle: {
-    color: '#F9FAFB',
-    fontSize: 18,
-    fontWeight: 600,
-    margin: 0,
-    fontFamily: "'Inter', sans-serif",
-  },
-  topBarActions: {
-    display: 'flex',
-    gap: 8,
-    alignItems: 'center',
-  },
-  actionBtn: {
-    padding: '8px 14px',
-    backgroundColor: '#253655',
-    color: '#9DA7B7',
-    border: '1px solid #353E56',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontSize: 13,
-    fontWeight: 500,
-    fontFamily: "'Inter', sans-serif",
-    whiteSpace: 'nowrap',
-  },
-  saveBtn: {
-    padding: '8px 18px',
-    backgroundColor: '#1a3b2a',
-    color: '#4ade80',
-    border: '1px solid #166534',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontSize: 13,
-    fontWeight: 600,
-    fontFamily: "'Inter', sans-serif",
-  },
-  cancelBtn: {
-    padding: '8px 14px',
-    backgroundColor: '#253655',
-    color: '#9DA7B7',
-    border: '1px solid #353E56',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontSize: 13,
-    fontFamily: "'Inter', sans-serif",
-  },
-  formBar: {
-    display: 'flex',
-    gap: 8,
-    alignItems: 'center',
-    marginBottom: 12,
-    padding: '12px 14px',
-    backgroundColor: '#17213A',
-    border: '1px solid #253655',
-    borderRadius: 6,
-    flexWrap: 'wrap',
-  },
-  input: {
-    padding: '8px 10px',
-    backgroundColor: '#030E29',
-    border: '1px solid #253655',
-    borderRadius: 4,
-    color: '#E5E7EB',
-    fontSize: 13,
-    fontFamily: "'Inter', sans-serif",
-    boxSizing: 'border-box' as const,
-  },
-  sectionCard: {
-    marginBottom: 16,
-    padding: '14px 16px',
-    backgroundColor: '#0d1a30',
-    border: '1px solid #253655',
-    borderRadius: 8,
-  },
-  sectionHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-    gap: 8,
-  },
-  sectionTitle: {
-    color: '#E5E7EB',
-    fontSize: 15,
-    fontWeight: 600,
-    margin: 0,
-    fontFamily: "'Inter', sans-serif",
-    cursor: 'pointer',
-  },
-  sectionActions: {
-    display: 'flex',
-    gap: 4,
-    alignItems: 'center',
-  },
-  courseCount: {
-    color: '#6B7280',
-    fontSize: 12,
-    marginRight: 8,
-  },
-  iconBtn: {
-    background: 'none',
-    border: 'none',
-    color: '#9DA7B7',
-    cursor: 'pointer',
-    fontSize: 12,
-    padding: '2px 6px',
-    borderRadius: 4,
-    fontFamily: "'Inter', sans-serif",
-  },
-  courseCard: {
-    marginBottom: 6,
-    padding: '10px 12px',
-    backgroundColor: '#17213A',
-    border: '1px solid #253655',
-    borderRadius: 6,
-  },
-  courseHeader: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: 8,
-  },
-  expandBtn: {
-    background: 'none',
-    border: 'none',
-    color: '#9DA7B7',
-    cursor: 'pointer',
-    fontSize: 14,
-    padding: '2px 4px',
-    marginTop: 2,
-    fontFamily: "'Inter', sans-serif",
-  },
-  courseTitle: {
-    display: 'block',
-    color: '#E5E7EB',
-    fontSize: 14,
-    fontWeight: 600,
-    fontFamily: "'Inter', sans-serif",
-  },
-  courseDesc: {
-    display: 'block',
-    color: '#6B7280',
-    fontSize: 12,
-    marginTop: 2,
-    fontFamily: "'Inter', sans-serif",
-  },
-  courseActions: {
-    display: 'flex',
-    gap: 4,
-    alignItems: 'center',
-    flexShrink: 0,
-  },
-  editContentBtn: {
-    padding: '4px 10px',
-    backgroundColor: '#1e3a5f',
-    color: '#60a5fa',
-    border: '1px solid #2563eb',
-    borderRadius: 4,
-    cursor: 'pointer',
-    fontSize: 11,
-    fontWeight: 500,
-    fontFamily: "'Inter', sans-serif",
-  },
-  conceptsArea: {
-    marginTop: 10,
-    marginLeft: 20,
-    borderLeft: '2px solid #253655',
-    paddingLeft: 12,
-  },
-  conceptCard: {
-    marginBottom: 8,
-    padding: '8px 10px',
-    backgroundColor: '#0d1a30',
-    border: '1px solid #1e2d4a',
-    borderRadius: 4,
-  },
-  conceptHeader: {
-    display: 'flex',
-    gap: 8,
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  topicRow: {
-    display: 'flex',
-    gap: 6,
-    alignItems: 'center',
-    marginBottom: 4,
-    paddingLeft: 4,
-  },
-  implementedLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    cursor: 'pointer',
-    flexShrink: 0,
-  },
-  topicIdBadge: {
-    fontSize: 10,
-    color: '#6B7280',
-    backgroundColor: '#0d1a30',
-    padding: '2px 6px',
-    borderRadius: 4,
-    fontFamily: "'Inter', sans-serif",
-    whiteSpace: 'nowrap',
-    flexShrink: 0,
-  },
-  addBtn: {
-    padding: '4px 12px',
-    backgroundColor: '#253655',
-    color: '#9DA7B7',
-    border: '1px solid #353E56',
-    borderRadius: 4,
-    cursor: 'pointer',
-    fontSize: 12,
-    fontFamily: "'Inter', sans-serif",
-    marginTop: 4,
-  },
-  emptyText: {
-    color: '#6B7280',
-    fontSize: 13,
-    fontStyle: 'italic',
-    marginTop: 8,
-  },
 };
 
 export default ContentManager;

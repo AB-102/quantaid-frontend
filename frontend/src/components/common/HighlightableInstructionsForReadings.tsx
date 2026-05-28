@@ -30,34 +30,34 @@ const HighlightableInstructionsForReading: React.FC<Props> = ({
           const HORIZONTAL_OFFSET = -200;
           const HEADER_HEIGHT = 60;
           const POPUP_HEIGHT = 48;
-          
+
           // Find the scrollable content container
           const contentContainer = document.querySelector('.content-animated.dashboard-content');
           const scrollTop = contentContainer ? contentContainer.scrollTop : 0;
-          
+
           // Convert document coordinates back to viewport coordinates
           // For container scrolling, we need to account for container scroll instead of window scroll
           const currentTop = selectionDocumentPos.bottom - scrollTop;
           const currentLeft = selectionDocumentPos.right;
-          
+
           // Calculate new popup position
           const preferredTop = currentTop + VERTICAL_OFFSET;
           const preferredLeft = currentLeft + HORIZONTAL_OFFSET;
-          
+
           // Basic bounds checking
           const viewportHeight = window.innerHeight;
           const contentTop = HEADER_HEIGHT;
-          
+
           let finalTop = preferredTop;
           const finalLeft = Math.max(10, preferredLeft);
-          
+
           // Ensure popup stays below header and within viewport
           if (finalTop < contentTop) {
             finalTop = contentTop + 10;
           } else if (finalTop + POPUP_HEIGHT > viewportHeight) {
             finalTop = viewportHeight - POPUP_HEIGHT - 10;
           }
-          
+
           setPopupPos({
             top: finalTop,
             left: finalLeft,
@@ -80,12 +80,12 @@ const HighlightableInstructionsForReading: React.FC<Props> = ({
   const handleMouseUp = () => {
     const sel = window.getSelection();
     const text = sel?.toString().trim() ?? '';
-    
+
     // Only show popup if we have meaningful text selected (more than just whitespace)
     if (text && text.length > 0 && sel?.rangeCount) {
       const range = sel.getRangeAt(0);
       const rect = range.getBoundingClientRect();
-      
+
       // Additional check: make sure the selection actually has visible content
       // by checking if the bounding rect has meaningful dimensions
       if (rect.width > 0 && rect.height > 0) {
@@ -93,49 +93,49 @@ const HighlightableInstructionsForReading: React.FC<Props> = ({
         // For container scrolling, we need to use container scroll offset
         const contentContainer = document.querySelector('.content-animated.dashboard-content');
         const scrollTop = contentContainer ? contentContainer.scrollTop : 0;
-        
+
         setSelectionDocumentPos({
           bottom: rect.bottom + scrollTop,
           right: rect.right + window.scrollX, // Horizontal scrolling still uses window
         });
-        
+
         // Popup dimensions (approximate)
         const POPUP_HEIGHT = 48;
-        
+
         // Your preferred offsets
         const VERTICAL_OFFSET = -60;
         const HORIZONTAL_OFFSET = -600;
-        
+
         // Account for fixed header
         const HEADER_HEIGHT = 60;
-        
+
         // Get viewport dimensions
         const viewportHeight = window.innerHeight;
         const contentTop = HEADER_HEIGHT;
-        
+
         // Calculate preferred position (using viewport coordinates for fixed positioning)
         const preferredTop = rect.bottom + VERTICAL_OFFSET;
         const preferredLeft = rect.right + HORIZONTAL_OFFSET;
-        
+
         // Check if preferred position would be visible (considering header)
         const wouldFitBottom = (preferredTop + POPUP_HEIGHT) <= viewportHeight && preferredTop >= contentTop;
         const wouldFitLeft = preferredLeft >= 0;
-        
+
         let finalTop = preferredTop;
         let finalLeft = preferredLeft;
-        
+
         // If bottom position doesn't fit, try top
         if (!wouldFitBottom) {
           const alternateTop = rect.top - POPUP_HEIGHT + VERTICAL_OFFSET;
           const wouldFitTop = alternateTop >= contentTop;
-          
+
           if (wouldFitTop) {
             finalTop = alternateTop;
           } else {
             // If neither position works, scroll to make bottom position work
             const neededSpace = (rect.bottom + POPUP_HEIGHT + VERTICAL_OFFSET) - viewportHeight;
             const scrollTarget = Math.max(0, neededSpace);
-            
+
             if (scrollTarget > 0) {
               // Smooth scroll the content container to make room for the popup
               const contentContainer = document.querySelector('.content-animated.dashboard-content');
@@ -145,7 +145,7 @@ const HighlightableInstructionsForReading: React.FC<Props> = ({
                   behavior: 'smooth'
                 });
               }
-              
+
               // Use preferred position after scroll
               finalTop = preferredTop;
             } else {
@@ -155,12 +155,12 @@ const HighlightableInstructionsForReading: React.FC<Props> = ({
             }
           }
         }
-        
+
         // Handle horizontal positioning
         if (!wouldFitLeft) {
           finalLeft = Math.max(10, preferredLeft);
         }
-        
+
         setPopupPos({
           top: finalTop,
           left: finalLeft,
@@ -171,7 +171,7 @@ const HighlightableInstructionsForReading: React.FC<Props> = ({
         return;
       }
     }
-    
+
     // Hide popup if no valid selection
     setShowPopup(false);
     setSelectionDocumentPos(null);
@@ -188,7 +188,7 @@ const HighlightableInstructionsForReading: React.FC<Props> = ({
 
     // Add global listener to catch selections that end outside our container
     document.addEventListener('mouseup', globalMouseUpHandler);
-    
+
     return () => {
       document.removeEventListener('mouseup', globalMouseUpHandler);
     };
@@ -227,85 +227,54 @@ const HighlightableInstructionsForReading: React.FC<Props> = ({
   }, [showPopup]);
 
   return (
-    <div style={{ position: 'relative' }} onMouseUp={handleMouseUp} onClick={handleClick}>
+    <div className="relative" onMouseUp={handleMouseUp} onClick={handleClick}>
       {children}
       {showPopup && (
         <div
-          style={{
-            position: 'fixed',
-            top: popupPos.top,
-            left: popupPos.left,
-            border: '2px solid #0B54A7',
-            borderRadius: '8px',
-            display: 'flex',
-            zIndex: 1000,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-            overflow: 'hidden',
-          }}
+          data-highlight-popup="true"
+          className="
+            fixed z-1000 flex overflow-hidden rounded-lg border-2
+            border-[#0B54A7] shadow-[0_2px_8px_rgba(0,0,0,0.2)]
+          "
+          style={{ top: popupPos.top, left: popupPos.left }}
         >
           <button
-            style={explainButtonStyle}
+            className="
+              highlight-analogy-btn flex flex-1 cursor-pointer items-center
+              justify-center gap-0 rounded-none border-none bg-[#E6F1FB] p-2
+              font-inter text-lg font-medium whitespace-nowrap text-[#07073D]
+              transition-all duration-200
+            "
             onClick={() => {
               onExplain(highlightedText);
               setShowPopup(false);
               setSelectionDocumentPos(null);
             }}
           >
-            <MdOutlineChat size={20} style={{ marginRight: '8px' }} />
+            <MdOutlineChat size={20} className="mr-2" />
             Explain
           </button>
           <button
-            style={analogyButtonStyle}
+            className="
+              highlight-analogy-btn flex cursor-pointer items-center
+              justify-center rounded-none border-none bg-[#A7BAE2] p-2
+              font-inter text-lg font-medium whitespace-nowrap text-[#07073D]
+              transition-all duration-200
+            "
+            style={{ flex: '1.3' }}
             onClick={() => {
               onViewAnalogy(highlightedText);
               setShowPopup(false);
               setSelectionDocumentPos(null);
             }}
           >
-            <MdLightbulbOutline size={20} style={{ marginRight: '8px' }} />
+            <MdLightbulbOutline size={20} className="mr-2" />
             View Analogy
           </button>
         </div>
       )}
     </div>
   );
-};
-
-const explainButtonStyle: React.CSSProperties = {
-  backgroundColor: '#E6F1FB',
-  color: '#07073D',
-  border: 'none',
-  padding: '8px 8px',
-  gap: '0',
-  cursor: 'pointer',
-  fontSize: '18px',
-  fontWeight: '500',
-  fontFamily: "'Inter', sans-serif",
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flex: '1',
-  transition: 'all 0.2s ease',
-  borderRadius: '0',
-  whiteSpace: 'nowrap',
-};
-
-const analogyButtonStyle: React.CSSProperties = {
-  backgroundColor: '#A7BAE2',
-  color: '#07073D',
-  border: 'none',
-  padding: '8px 8px',
-  cursor: 'pointer',
-  fontSize: '18px',
-  fontWeight: '500',
-  fontFamily: "'Inter', sans-serif",
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flex: '1.3',
-  transition: 'all 0.2s ease',
-  borderRadius: '0',
-  whiteSpace: 'nowrap',
 };
 
 export default HighlightableInstructionsForReading;

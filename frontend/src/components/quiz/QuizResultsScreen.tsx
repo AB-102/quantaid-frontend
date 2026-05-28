@@ -1,5 +1,4 @@
 import React from 'react';
-import { styles } from './QuizStyles';
 
 interface QuizResultsScreenProps {
   score: number;
@@ -28,14 +27,16 @@ const QuizResultsScreen: React.FC<QuizResultsScreenProps> = ({
   };
 
   return (
-    <div style={styles.resultsContainer}>
-      <h1 style={styles.resultsTitle}>Lesson complete!</h1>
+    <div className="flex size-full flex-col items-center justify-center p-10">
+      <h1 className="
+        mb-12.5 text-center font-inter text-[36px] font-semibold text-white
+      ">Lesson complete!</h1>
 
-      <div style={styles.resultsContent}>
+      <div className="mb-15 flex items-center justify-center gap-20">
         {/* Accuracy Circle */}
-        <div style={styles.accuracySection}>
-          <div style={styles.accuracyCircle}>
-            <svg width="70" height="70" style={styles.accuracySvg}>
+        <div className="flex flex-col items-center">
+          <div className="relative mb-0 flex items-center justify-center">
+            <svg width="70" height="70">
               <circle
                 cx="35"
                 cy="35"
@@ -57,21 +58,26 @@ const QuizResultsScreen: React.FC<QuizResultsScreenProps> = ({
                 style={progressCircleStyle}
               />
             </svg>
-            <div style={styles.percentageText}>{percent}%</div>
+            <div className="
+              absolute top-1/2 left-1/2 -translate-1/2 font-inter text-base
+              font-semibold text-white
+            ">{percent}%</div>
           </div>
-          <p style={styles.accuracyLabel}>Accuracy</p>
+          <p className="m-0 font-inter text-lg font-normal text-brand-cool">Accuracy</p>
         </div>
 
         {/* Time Section */}
-        <div style={styles.timeSection}>
-          <div style={styles.timeDisplay}>
+        <div className="flex flex-col items-center">
+          <div className="
+            mt-[2%] mb-[-2%] flex h-17.5 items-center justify-center
+          ">
             {durationMinutes !== null && durationSeconds !== null && (
-              <span style={styles.timeNumber}>
+              <span className="font-inter text-lg font-semibold text-white">
                 {durationMinutes}:{durationSeconds.toString().padStart(2, '0')}
               </span>
             )}
           </div>
-          <p style={styles.timeLabel}>Minutes</p>
+          <p className="m-0 font-inter text-lg font-normal text-brand-cool">Minutes</p>
         </div>
       </div>
     </div>

@@ -11,7 +11,6 @@ import { useQuizTimer } from '@/hooks/useQuizTimer';
 import Questions from './Questions';
 import QuizProgressBar from '../common/QuizProgressBar';
 import FeedbackModal from '../common/FeedbackModal';
-import { styles } from './QuizStyles';
 import QuizResultsScreen from './QuizResultsScreen';
 import ExitConfirmModal from './ExitConfirmModal';
 import QuizSettingsDropdown from './QuizSettingsDropdown';
@@ -336,10 +335,35 @@ const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, le
   const canContinue = selectedOption !== null && (!settings.showAnswersEnabled || !questionCompleted);
   const duration = getQuizDuration();
 
+  // Inline style objects passed as props to child components
+  const questionStyles: React.CSSProperties = {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: '28px',
+    fontWeight: '400',
+    lineHeight: '1.6',
+    letterSpacing: '.02em',
+    color: '#FFFFFF',
+    textAlign: 'left',
+    maxWidth: '1195px',
+    width: '100%',
+    margin: '0 auto 5.5rem auto',
+  };
+
+  const optionStyles: React.CSSProperties = {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: '18px',
+    fontWeight: 'normal',
+    lineHeight: '1.4',
+    color: '#AAAAC1',
+  };
+
   return (
-    <div ref={quizContainerRef} style={styles.container} role="main" aria-label="Quiz">
+    <div ref={quizContainerRef} className="
+      relative mx-auto flex size-full flex-col items-center justify-start
+      overflow-hidden bg-brand-bg text-white
+    " role="main" aria-label="Quiz">
       {showResultsScreen ? (
-        <div style={styles.resultsScreenContainer}>
+        <div className="flex size-full flex-col items-center justify-center">
           <QuizResultsScreen
             score={score}
             totalQuestions={questions.length}
@@ -349,11 +373,17 @@ const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, le
         </div>
       ) : (
         <>
-          <div style={styles.topBar} role="navigation" aria-label="Quiz navigation">
+          <div className="
+            relative z-10 mt-12 mb-16 flex w-[70%] max-w-337.5 items-center
+            justify-center
+          " role="navigation" aria-label="Quiz navigation">
             <button
               ref={settings.settingsButtonRef}
               onClick={settings.toggleSettingsDropdown}
-              style={styles.dotsButton}
+              className="
+                z-10 mr-10 inline-flex size-6 cursor-pointer items-center
+                justify-center border-none bg-transparent p-0
+              "
               aria-label="Quiz settings"
               aria-expanded={settings.showSettingsDropdown}
               aria-haspopup="true"
@@ -366,14 +396,25 @@ const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, le
               totalQuestions={questions.length}
               isLastQuestion={currentIndex === questions.length - 1}
               hasSubmittedLastAnswer={hasSubmitted && currentIndex === questions.length - 1}
-              style={styles.progressBar}
+              style={{
+                width: '90%',
+                height: 10,
+                backgroundColor: '#424E62',
+                borderRadius: 6,
+                border: 'none',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                marginRight: '2.5rem',
+              }}
               fillColor="#7BA8ED"
               animationDuration={600}
             />
 
             <button
               onClick={progressSaved ? onExit : handleBackButtonClick}
-              style={styles.backButton}
+              className="
+                z-10 inline-flex size-6 cursor-pointer items-center
+                justify-center border-none bg-transparent p-0
+              "
               aria-label="Exit quiz"
             >
               <IoCloseOutline size={24} color={'#424E62'} />
@@ -402,30 +443,43 @@ const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, le
               onToggle={settings.handleSettingToggle}
             />
           )}
-          <div style={styles.quizPane}>
+
+          <div className="
+            mx-auto box-border flex w-[62%] max-w-298.75 flex-1 flex-col
+            items-center justify-start px-10 pt-15 pb-10
+          ">
             {showReviewConcept ? (
               // Review Concept Content Display
-              <div style={styles.reviewConceptContainer}>
-                <div style={styles.reviewConceptContent}>
+              <div className="flex size-full flex-col overflow-hidden">
+                <div className="
+                  flex-1 overflow-y-auto scroll-smooth px-5 font-inter
+                  text-[20px] font-normal
+                ">
                   {(() => {
                     const content = getRelevantLessonContent();
                     if (!content) return <p>No lesson content available.</p>;
 
                     return (
                       <>
-                        <h2 style={styles.reviewConceptTitle}>{content.title}</h2>
-                        <div style={styles.reviewConceptParagraphs}>
+                        <h2>{content.title}</h2>
+                        <div className="mb-7.5">
                           {content.paragraphs.map((paragraph, index) => (
-                            <p key={index} style={styles.reviewConceptParagraph}>
+                            <p key={index} className="
+                              mb-4 font-inter text-lg/relaxed font-normal
+                            ">
                               {typeof paragraph === 'string' ? paragraph : paragraph.text}
                             </p>
                           ))}
                         </div>
-                        <div style={styles.revisitLessonContainer}>
+                        <div className="mt-7.5 text-left">
                           <button
                             onClick={progressSaved ? onExit : handleBackButtonClick}
-                            className="revisit-lesson-link"
-                            style={styles.revisitLessonLink}
+                            className="
+                              revisit-lesson-link cursor-pointer border-none
+                              bg-transparent p-0 font-inter text-sm/snug
+                              font-normal text-[#AFAFAF] underline
+                              transition-[color] duration-200
+                            "
                             aria-label="Revisit full lesson"
                           >
                             Revisit full lesson
@@ -448,8 +502,8 @@ const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, le
                   wrongChoices={wrongChoices}
                   questionCompleted={questionCompleted}
                   showAnswersEnabled={settings.showAnswersEnabled}
-                  questionStyles={styles.questionStyles}
-                  optionStyles={styles.optionStyles}
+                  questionStyles={questionStyles}
+                  optionStyles={optionStyles}
                 />
               </>
             )}

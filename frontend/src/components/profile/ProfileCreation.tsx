@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/api';
-import { styles } from './ProfileCreationStyles';
 import welcomeVideo from '@/assets/welcome.mp4';
 import { stepConfigs } from './profileStepConfigs';
 import type { FormData, FormHandlers, CommonProps } from './profileStepConfigs';
@@ -56,7 +55,7 @@ const ProfileCreation: React.FC = () => {
   }
   if (!userId) {
     return (
-      <div style={{ color: 'red' }}>
+      <div className="text-error">
         <p>No user ID found in session or localStorage. Please log in again.</p>
       </div>
     );
@@ -139,8 +138,13 @@ const ProfileCreation: React.FC = () => {
   /** ------------------ VIDEO POPUP ------------------ **/
   if (showVideoPopup) {
     return (
-      <div style={styles.videoOverlay}>
-        <h2 style={{ color: '#FFFFFF', marginBottom: '20px', fontSize: '34px', fontFamily: "'Inter', sans-serif", fontWeight: '400', letterSpacing: '.02em' }}>
+      <div className="
+        fixed inset-0 z-2000 flex flex-col items-center justify-center
+        bg-black/90 p-5
+      ">
+        <h2 className="
+          mb-5 font-inter text-[34px] font-normal tracking-[.02em] text-white
+        ">
           Welcome to Quantaid!
         </h2>
         <video
@@ -149,15 +153,18 @@ const ProfileCreation: React.FC = () => {
           playsInline
           controls
           onEnded={() => navigate('/map')}
-          style={{ borderRadius: '8px' }}
+          className="rounded-lg"
         >
           <source src={welcomeVideo} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <button
           onClick={() => navigate('/map')}
-          style={styles.skipVideoButton}
-          className="skip-button"
+          className="
+            skip-button mt-5 min-w-30 cursor-pointer rounded-xl border-none
+            bg-[#3D4C65] px-6 py-3 font-inter text-base font-medium text-white
+            transition-all duration-200
+          "
         >
           Continue
         </button>

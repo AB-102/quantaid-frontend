@@ -8,9 +8,9 @@ vi.mock('@/api', () => ({
 }))
 
 describe('Login', () => {
-  it('renders login form', () => {
+  it('renders login form with Google sign-in button', () => {
     renderWithProviders(<Login />)
     expect(screen.getByText(/log in/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /google/i })).toBeInTheDocument()
   })
 })

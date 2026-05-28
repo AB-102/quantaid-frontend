@@ -13,7 +13,6 @@ import LessonView from './LessonView';
 import { useNavigate } from 'react-router-dom';
 import TutorialPopup from '../tutorial/TutorialPopup';
 import { useAuth } from '@/AuthContext';
-import { styles } from './DashboardStyles';
 import type { Course } from '@/types/course';
 import { useCardFlipAnimation } from '@/hooks/useCardFlipAnimation';
 import { useDashboardLayout } from '@/hooks/useDashboardLayout';
@@ -233,15 +232,18 @@ const Dashboard: React.FC = () => {
     if (view === 'dashboard') return null;
 
     const breadcrumbItems = [];
-    
+
     const rootTabName = getCurrentTabName();
-    
+
     breadcrumbItems.push(
       <button
         key="root"
-        style={styles.breadcrumbButton}
+        className="
+          breadcrumb-button cursor-pointer border-none bg-transparent p-0
+          font-inter text-base font-medium text-white no-underline
+          transition-[text-decoration] duration-200
+        "
         onClick={goDashboard}
-        className="breadcrumb-button"
         aria-label="Go back to lessons overview"
       >
         {rootTabName}
@@ -249,7 +251,9 @@ const Dashboard: React.FC = () => {
     );
 
     breadcrumbItems.push(
-      <span key="separator1" style={styles.breadcrumbSeparator}> &gt; </span>
+      <span key="separator1" className="
+        mx-3 cursor-default text-[0.9rem] text-white
+      "> &gt; </span>
     );
 
     if (view === 'lesson' && currentCourse !== null) {
@@ -258,23 +262,28 @@ const Dashboard: React.FC = () => {
         breadcrumbItems.push(
           <button
             key="course"
-            style={styles.breadcrumbButton}
+            className="
+              breadcrumb-button cursor-pointer border-none bg-transparent p-0
+              font-inter text-base font-medium text-white no-underline
+              transition-[text-decoration] duration-200
+            "
             onClick={() => goToCourseDetail(currentCourse)}
-            className="breadcrumb-button"
             aria-label={`Go back to ${course.title}`}
           >
             {course.title}
           </button>
         );
-        
+
         breadcrumbItems.push(
-          <span key="separator2" style={styles.breadcrumbSeparator}> &gt; </span>
+          <span key="separator2" className="
+            mx-3 cursor-default text-[0.9rem] text-white
+          "> &gt; </span>
         );
       }
     }
 
     return (
-      <div style={styles.breadcrumbContainer}>
+      <div className="mb-6.25 flex items-center font-inter text-base">
         {breadcrumbItems}
       </div>
     );
@@ -327,15 +336,16 @@ const Dashboard: React.FC = () => {
     />
   );
 
-  // Course detail view — delegated to CourseDetailView component
-
-  // Lesson view — delegated to LessonView component
-
   /* ---------------------------------------------------------------- */
   /* JSX                                                              */
   /* ---------------------------------------------------------------- */
   return (
-    <div style={styles.container} className={layout.effectiveDuration === 0 ? 'no-transition' : ''}>
+    <div
+      className={`
+        flex h-screen overflow-clip bg-brand-bg
+        font-inter${layout.effectiveDuration === 0 ? ' no-transition' : ''}
+      `}
+    >
 
       {/* SIDEBAR */}
       <Sidebar
@@ -370,41 +380,39 @@ const Dashboard: React.FC = () => {
         view={view}
         quizOpen={quizOpen}
         onChatToggle={layout.handleChatToggle}
-        headerStyle={{
-          ...styles.header,
-          ...layout.getHeaderStyles(),
-        }}
+        headerStyle={layout.getHeaderStyles()}
       />
 
       {/* MAIN PANEL */}
       <main
-        style={{
-          ...styles.main,
-          ...layout.getMainPanelStyles(),
-        }}
-        className="main-panel-coordinated"
+        className="
+          main-panel-coordinated flex h-screen min-w-75 flex-col overflow-clip
+        "
+        style={layout.getMainPanelStyles()}
         role="main"
         aria-label="Course content"
       >
-        
         <div
           ref={contentRef}
-          style={styles.content}
-          className="dashboard-content default-scrollbar"
+          className="
+            dashboard-content default-scrollbar content-animated mt-15
+            h-[calc(100vh-80px)] flex-1 overflow-x-hidden overflow-y-auto px-16
+            py-8
+          "
           tabIndex={0}
           role="region"
           aria-label="Scrollable content area"
         >
           {data.contentError !== null && data.contentError !== undefined && (
-            <p role="alert" style={{ color: '#f87171', marginBottom: 12 }}>
+            <p role="alert" className="mb-3 text-[#f87171]">
               Course content is temporarily unavailable. Please try again later.
             </p>
           )}
           {data.isLoadingProgress ? (
-             <p style={styles.loadingText}>Loading your progress...</p>
+            <p className="mt-8 text-center text-[1.2rem] text-white">Loading your progress...</p>
           ) : view === 'dashboard' ? (
             <>
-              <h2 style={styles.title}>Lessons</h2>
+              <h2 className="m-0 mb-5 text-[2rem] font-semibold text-white">Lessons</h2>
               {data.activeSections
                 .sort((a, b) => a.order - b.order)
                 .map(section => {
@@ -413,9 +421,16 @@ const Dashboard: React.FC = () => {
                     .filter((c): c is Course => !!c);
                   if (sectionCourses.length === 0) return null;
                   return (
-                    <section key={section.id} style={styles.rowSection}>
-                      <h2 style={styles.rowTitle}>{section.title}</h2>
-                      <div style={styles.cardGrid}>{sectionCourses.map(renderCourseCard)}</div>
+                    <section key={section.id} className="mb-10">
+                      <h2 className="
+                        m-0 mb-5 text-[1.3rem] font-semibold text-white
+                      ">{section.title}</h2>
+                      <div className="
+                        box-border grid w-full auto-rows-[360px]
+                        grid-cols-[repeat(auto-fill,300px)] items-start gap-3.75
+                      ">
+                        {sectionCourses.map(renderCourseCard)}
+                      </div>
                     </section>
                   );
                 })}
@@ -443,7 +458,7 @@ const Dashboard: React.FC = () => {
           )}
         </div>
       </main>
-      
+
       {/* CHAT */}
       {view === 'lesson' && (
         <GlobalChat
@@ -461,8 +476,13 @@ const Dashboard: React.FC = () => {
 
       {/* QUIZ */}
       {quizOpen && currentLesson !== null && data.currentQuiz.length > 0 && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
+        <div className="
+          fixed inset-0 z-1500 flex items-center justify-center bg-black/80
+        ">
+          <div className="
+            relative flex h-screen w-screen flex-col overflow-hidden
+            rounded-none bg-transparent
+          ">
             <Quiz
               courseId={currentLesson}
               questions={data.currentQuiz}

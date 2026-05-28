@@ -1,5 +1,4 @@
 import React from 'react';
-import { styles } from './QuizStyles';
 
 interface SettingOption {
   label: string;
@@ -23,18 +22,19 @@ const QuizSettingsDropdown: React.FC<QuizSettingsDropdownProps> = ({
   return (
     <div
       ref={dropdownRef}
-      style={{
-        ...styles.settingsDropdown,
-        position: 'fixed',
-        left: position.x - 30,
-        top: position.y,
-        right: 'auto',
-      }}
+      className="
+        z-1000 min-w-62.5 rounded-lg border border-brand-border bg-brand-mid p-3
+        shadow-[0_4px_12px_rgba(0,0,0,0.3)]
+      "
+      style={{ position: 'fixed', left: position.x - 30, top: position.y, right: 'auto' }}
     >
       {settings.map(({ label, key, enabled }) => (
         <div
           key={key}
-          style={styles.settingsOption}
+          className="
+            mb-1 flex cursor-pointer items-center justify-between rounded-md
+            p-0.5 transition-[background-color] duration-200
+          "
           onClick={() => onToggle(key, enabled)}
           role="button"
           tabIndex={0}
@@ -46,18 +46,25 @@ const QuizSettingsDropdown: React.FC<QuizSettingsDropdownProps> = ({
           }}
           aria-label={`${label} ${enabled ? 'on' : 'off'}`}
         >
-          <div style={styles.optionLeft}>
-            <span style={styles.optionText}>{label}</span>
+          <div className="flex items-center gap-3">
+            <span className="font-inter text-sm font-normal text-brand-gray-mid">{label}</span>
           </div>
-          <div style={styles.toggle}>
-            <div style={{
-              ...styles.toggleTrack,
-              backgroundColor: enabled ? '#7BA8ED' : '#424E62'
-            }}>
-              <div style={{
-                ...styles.toggleThumb,
-                transform: enabled ? 'translateX(16px)' : 'translateX(2px)'
-              }} />
+          <div className="flex items-center">
+            <div
+              className="
+                relative h-4 w-8 rounded-2xl transition-[background-color]
+                duration-200
+              "
+              style={{ backgroundColor: enabled ? '#7BA8ED' : '#424E62' }}
+            >
+              <div
+                className="
+                  absolute top-0.5 size-3 rounded-full bg-white
+                  shadow-[0_1px_3px_rgba(0,0,0,0.3)] transition-[transform]
+                  duration-200
+                "
+                style={{ transform: enabled ? 'translateX(16px)' : 'translateX(2px)' }}
+              />
             </div>
           </div>
         </div>

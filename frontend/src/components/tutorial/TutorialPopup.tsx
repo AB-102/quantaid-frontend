@@ -59,7 +59,6 @@ const TutorialPopup: React.FC<TutorialPopupProps> = ({
 	const popupRef = useRef<HTMLDivElement>(null);
 	const animationFrameRef = useRef<number>();
 
-	// Calculate position relative to anchor element
 	const updatePosition = React.useCallback(() => {
 		if (!anchorElement) {
 			setPosition(prev => ({ ...prev, visible: false }));
@@ -68,23 +67,19 @@ const TutorialPopup: React.FC<TutorialPopupProps> = ({
 
 		const rect = anchorElement.getBoundingClientRect();
 		const popupWidth = 300;
-		const popupHeight = 300; // Approximate height
+		const popupHeight = 300;
 		const offset = 20;
 
-		// Check if anchor is visible in viewport
 		const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-		
 		if (!isVisible) {
 			setPosition(prev => ({ ...prev, visible: false }));
 			return;
 		}
 
-		// Calculate position - try to place to the left of the anchor
 		let left = rect.left - popupWidth - offset;
 		let top = rect.top + offset;
 		let flipped = false;
 
-		// If popup would go off-screen to the left, flip to the right side
 		if (left < 0) {
 			left = rect.left + offset;
 			flipped = true;
@@ -102,7 +97,6 @@ const TutorialPopup: React.FC<TutorialPopupProps> = ({
 		setPosition({ top, left, visible: true, flipped });
 	}, [anchorElement]);
 
-	// Update position on scroll or resize
 	useEffect(() => {
 		const handleUpdate = () => {
 			if (animationFrameRef.current) {
@@ -111,16 +105,13 @@ const TutorialPopup: React.FC<TutorialPopupProps> = ({
 			animationFrameRef.current = requestAnimationFrame(updatePosition);
 		};
 
-		// Initial position
 		updatePosition();
 
-		// Listen for scroll events on the scrollable container
 		const scrollContainer = document.querySelector('.dashboard-content');
 		if (scrollContainer) {
 			scrollContainer.addEventListener('scroll', handleUpdate, { passive: true });
 		}
 
-		// Listen for window resize
 		window.addEventListener('resize', handleUpdate, { passive: true });
 		window.addEventListener('scroll', handleUpdate, { passive: true });
 
@@ -130,19 +121,17 @@ const TutorialPopup: React.FC<TutorialPopupProps> = ({
 			}
 			window.removeEventListener('resize', handleUpdate);
 			window.removeEventListener('scroll', handleUpdate);
-			
 			if (animationFrameRef.current) {
 				cancelAnimationFrame(animationFrameRef.current);
 			}
 		};
 	}, [updatePosition]);
 
-	// Re-poll position during layout transitions (chat open/close, sidebar toggle)
 	useEffect(() => {
 		if (!anchorElement) return;
 
 		const start = performance.now();
-		const duration = animationDuration + 50; // slight buffer past transition end
+		const duration = animationDuration + 50;
 		let rafId: number;
 
 		const poll = () => {
@@ -159,97 +148,124 @@ const TutorialPopup: React.FC<TutorialPopupProps> = ({
 	const stepIndex = step - 1;
 	const { title, description, buttonLabel, showBack, showNext, image } = tutorialSteps[stepIndex];
 
-	// Create portal to render outside the scrollable content
 	const portalRoot = document.body;
 
 	if (!position.visible) {
 		return null;
 	}
 
+	// Arrow border-trick styles: CSS triangles cannot be expressed as Tailwind utilities
+	const arrowWrapperStyle: React.CSSProperties = position.flipped
+		? { position: 'absolute', top: 35, left: -22, width: 0, height: 0, pointerEvents: 'none' }
+		: { position: 'absolute', top: 35, left: 290, width: 0, height: 0, pointerEvents: 'none' };
+
+	const arrowOuterStyle: React.CSSProperties = position.flipped
+		? { position: 'absolute', top: 0, left: -8, borderRight: '16px solid #2B3854', borderTop: '16px solid transparent', borderLeft: '16px solid transparent', borderBottom: '12px solid transparent' }
+		: { position: 'absolute', top: 0, left: 8, borderLeft: '16px solid #2B3854', borderTop: '16px solid transparent', borderRight: '16px solid transparent', borderBottom: '12px solid transparent' };
+
+	const arrowInnerStyle: React.CSSProperties = position.flipped
+		? { position: 'absolute', top: 0, left: -6, borderRight: '16px solid #030C34', borderTop: '16px solid transparent', borderLeft: '16px solid transparent', borderBottom: '12px solid transparent' }
+		: { position: 'absolute', top: 0, left: 6, borderLeft: '16px solid #030C34', borderTop: '16px solid transparent', borderRight: '16px solid transparent', borderBottom: '12px solid transparent' };
+
 	return createPortal(
 		<div
 			ref={popupRef}
-			className="tutorial-popup"
-			style={{
-				...styles.container,
-				top: position.top,
-				left: position.left,
-				opacity: 1,
-				transform: 'scale(1)',
-				transition: 'opacity 0.2s ease, transform 0.2s ease',
-			}}
+			className="
+     tutorial-popup pointer-events-auto fixed z-3000 w-75 scale-100
+     rounded-[10px] border border-[#2F3C57] opacity-100
+     transition-[opacity,transform] duration-200
+   "
+			style={{ top: position.top, left: position.left }}
 		>
 			{/* Arrow */}
-			<div style={position.flipped ? styles.arrowWrapperFlipped : styles.arrowWrapper}>
-				<div style={position.flipped ? styles.arrowOuterFlipped : styles.arrowOuter} />
-				<div style={position.flipped ? styles.arrowInnerFlipped : styles.arrowInner} />
+			<div style={arrowWrapperStyle}>
+				<div style={arrowOuterStyle} />
+				<div style={arrowInnerStyle} />
 			</div>
-			
-			<div className="popup" style={styles.popup}>
+
+			{/* popup: relative container, image stacked above content */}
+			<div className="popup relative flex flex-col overflow-clip rounded-[10px]">
 				{/* Close button */}
 				<button
 					onClick={onClose}
-					style={styles.closeButton}
+					className="
+       absolute top-0 right-0 z-1 flex cursor-pointer items-center
+       justify-center border-none bg-transparent p-1
+     "
 					aria-label="Close"
 				>
 					<MdClose size={24} color="#FFFFFF" />
 				</button>
-				
+
 				{/* Preload both images */}
-				<img src={AnalogyImg} alt="" style={{ display: 'none' }} />
-				<img src={ExplainImg} alt="" style={{ display: 'none' }} />
-				
+				<img src={AnalogyImg} alt="" className="hidden" />
+				<img src={ExplainImg} alt="" className="hidden" />
+
 				{/* Tutorial image */}
-				<div style={styles.imageContainer}>
-					<img src={image} alt={title} style={styles.image} />
+				<div className="flex min-h-50 items-end justify-center bg-[#030C34]">
+					<img
+						src={image}
+						alt={title}
+						className="
+        mx-auto my-3 block h-32 max-h-32 min-h-32 w-[calc(100%-48px)] rounded-lg
+        object-contain
+      "
+					/>
 				</div>
-				
-				<div style={styles.contentContainer}>
-					{/* Tutorial text */}
-					<div style={styles.tutorialText}>
-						<div style={styles.tutorialTitle}>{title}</div>
-						<div style={styles.tutorialDescription}>{description}</div>
+
+				{/* Content */}
+				<div className="bg-brand-card px-3.5 pt-3.5 pb-4">
+					<div className="mb-4.5">
+						<div className="mb-2 font-inter text-base font-medium text-[#F2F2F2]">
+							{title}
+						</div>
+						<div className="font-inter text-sm text-[#9CB0BC]">
+							{description}
+						</div>
 					</div>
-					
-					<div style={styles.navRow}>
-						<div style={styles.buttonContainer}>
-							{/* Back button */}
+
+					<div className="relative flex min-h-10 justify-between">
+						{/* Back button */}
+						<div className="flex min-w-15 items-center justify-center">
 							<button
 								onClick={onBack}
-								style={{
-									...styles.backButton,
-									visibility: showBack ? 'visible' : 'hidden',
-								}}
+								style={{ visibility: showBack ? 'visible' : 'hidden' }}
 								tabIndex={showBack ? 0 : -1}
 								aria-hidden={!showBack}
+								className="
+          cursor-pointer rounded-md border border-[#A8BAD8] bg-transparent px-2
+          py-1.5 font-inter text-base font-medium text-[#A8BAD8]
+        "
 							>
 								Back
 							</button>
 						</div>
-						
-						{/* Step indicators */}
-						<div style={styles.dotsRow}>
+
+						{/* Step dots */}
+						<div className="mt-7.5 flex items-center justify-center gap-0.75">
 							{[0, 1, 2].map(i => (
 								<span
 									key={i}
-									style={{
-										...styles.dot,
-										background: stepIndex === i ? '#A8BAD8' : '#525D67',
-									}}
+									className="
+           inline-block size-1.5 rounded-full transition-[background]
+           duration-200
+         "
+									style={{ background: stepIndex === i ? '#A8BAD8' : '#525D67' }}
 								/>
 							))}
 						</div>
-						
-						<div style={styles.buttonContainer}>
-							{/* Next/Got it button */}
+
+						{/* Next / Got it button */}
+						<div className="flex min-w-15 items-center justify-center">
 							<button
 								onClick={showNext ? onNext : onClose}
-								style={{
-									...styles.nextButton,
-									visibility: (showNext || buttonLabel === 'Got it') ? 'visible' : 'hidden',
-								}}
+								style={{ visibility: (showNext || buttonLabel === 'Got it') ? 'visible' : 'hidden' }}
 								tabIndex={(showNext || buttonLabel === 'Got it') ? 0 : -1}
 								aria-hidden={!(showNext || buttonLabel === 'Got it')}
+								className="
+          cursor-pointer rounded-sm border-none bg-[#A8BAD8] px-2 py-1.5
+          font-inter text-base font-medium text-[#030C34]
+        "
 							>
 								{buttonLabel}
 							</button>
@@ -260,174 +276,6 @@ const TutorialPopup: React.FC<TutorialPopupProps> = ({
 		</div>,
 		portalRoot
 	);
-};
-
-const styles: Record<string, React.CSSProperties> = {
-	container: {
-		position: 'fixed',
-		width: 300,
-		border: '1px solid #2F3C57',
-		borderRadius: '10px',
-		zIndex: 3000,
-		pointerEvents: 'auto',
-	},
-	arrowWrapper: {
-		position: 'absolute',
-		top: 35,
-		left: 290,
-		width: 0,
-		height: 0,
-		pointerEvents: 'none',
-	},
-	arrowOuter: {
-		position: 'absolute',
-		top: 0,
-		left: 8,
-		borderLeft: '16px solid #2B3854',
-		borderTop: '16px solid transparent',
-		borderRight: '16px solid transparent',
-		borderBottom: '12px solid transparent',
-	},
-	arrowInner: {
-		position: 'absolute',
-		top: 0,
-		left: 6,
-		borderLeft: '16px solid #030C34',
-		borderTop: '16px solid transparent',
-		borderRight: '16px solid transparent',
-		borderBottom: '12px solid transparent',
-	},
-	// Flipped arrow — left side, pointing left
-	arrowWrapperFlipped: {
-		position: 'absolute',
-		top: 35,
-		left: -22,
-		width: 0,
-		height: 0,
-		pointerEvents: 'none',
-	},
-	arrowOuterFlipped: {
-		position: 'absolute',
-		top: 0,
-		left: -8,
-		borderRight: '16px solid #2B3854',
-		borderTop: '16px solid transparent',
-		borderLeft: '16px solid transparent',
-		borderBottom: '12px solid transparent',
-	},
-	arrowInnerFlipped: {
-		position: 'absolute',
-		top: 0,
-		left: -6,
-		borderRight: '16px solid #030C34',
-		borderTop: '16px solid transparent',
-		borderLeft: '16px solid transparent',
-		borderBottom: '12px solid transparent',
-	},
-	popup: {
-		position: 'relative',
-		alignItems: 'center',
-		borderRadius: '10px',
-		overflow: 'clip',
-	},
-	closeButton: {
-		background: 'transparent',
-		border: 'none',
-		cursor: 'pointer',
-		padding: '4px',
-		display: 'flex',
-		alignItems: 'center',
-		justifyContent: 'center',
-		position: 'absolute',
-		right: 0,
-		top: 0,
-		zIndex: 1,
-	},
-	imageContainer: {
-		minHeight: 200,
-		display: 'flex',
-		alignItems: 'flex-end',
-		justifyContent: 'center',
-		background: '#030C34',
-	},
-	image: {
-		width: 'calc(100% - 48px)',
-		height: 128,
-		minHeight: 128,
-		maxHeight: 128,
-		margin: '12px auto 12px auto',
-		borderRadius: '8px',
-		objectFit: 'contain',
-		display: 'block',
-	},
-	contentContainer: {
-		padding: '14px 14px 16px 14px',
-		background: '#253655',
-	},
-	tutorialText: {
-		marginBottom: 18,
-	},
-	tutorialTitle: {
-		color: '#F2F2F2',
-		fontFamily: "'Inter', sans-serif",
-		fontWeight: 500,
-		fontSize: '16px',
-		marginBottom: 8,
-	},
-	tutorialDescription: {
-		color: '#9CB0BC',
-		fontFamily: "'Inter', sans-serif",
-		fontSize: '14px',
-	},
-	navRow: {
-		display: 'flex',
-		position: 'relative',
-		justifyContent: 'space-between',
-		minHeight: 40,
-	},
-	buttonContainer: {
-		minWidth: 60,
-		display: 'flex',
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	backButton: {
-		background: 'transparent',
-		color: '#A8BAD8',
-		border: '1px solid #A8BAD8',
-		borderRadius: 6,
-		padding: '6px 8px',
-		fontFamily: "'Inter', sans-serif",
-		fontWeight: 500,
-		fontSize: '16px',
-		cursor: 'pointer',
-	},
-	nextButton: {
-		background: '#A8BAD8',
-		color: '#030C34',
-		border: 'none',
-		borderRadius: 4,
-		padding: '6px 8px',
-		fontFamily: "'Inter', sans-serif",
-		fontWeight: 500,
-		fontSize: '16px',
-		cursor: 'pointer',
-	},
-	dotsRow: {
-		display: 'flex',
-		justifyContent: 'center',
-		alignItems: 'center',
-		gap: 3,
-		margin: '30px 0 0 0',
-	},
-	dot: {
-		width: 6,
-		height: 6,
-		borderRadius: '50%',
-		background: '#525D67',
-		transition: 'background 0.2s',
-		display: 'inline-block',
-	},
 };
 
 export default TutorialPopup;

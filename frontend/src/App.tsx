@@ -25,7 +25,6 @@ import AdminDashboard from './components/admin/AdminDashboard';
 import api from './api';
 import type { Question } from './types/quiz';
 import { AuthProvider, ProtectedRoute, AdminRoute, AdminToggle } from './AuthContext';
-import './App.css';
 
 /**
  * QuizPage fetches quiz questions from the API by courseId and renders the Quiz component.

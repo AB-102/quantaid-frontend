@@ -4,17 +4,17 @@ import { useAuth } from '@/AuthContext';
 import api from '@/api';
 import GoogleIcon from '@/assets/google-icon.svg';
 import LoginGraphic from '@/assets/login-graphic.svg';
+import QuantaidLogo from '@/assets/quantaid-logo.svg';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { styles } from './LoginStyles';
 
 
 const Login = () => {
   const navigate = useNavigate();
   const { login: authLogin } = useAuth();
 
-  // Returning users (have logged in before) start in login mode; new users start in sign-up mode
+  // new users start in sign-up mode, returning users start in login mode
   const [isSignUpMode, setIsSignUpMode] = useState(() => localStorage.getItem('loggedInUserEmail') === null);
   const [isLoading, setIsLoading] = useState(false);
   const googleButtonRef = useRef<HTMLButtonElement>(null);
@@ -26,7 +26,6 @@ const Login = () => {
       void (async () => {
         setIsLoading(true);
         try {
-          // Send access token to backend — it verifies with Google server-side
           const backendResponse = await api.post(
             '/append_user_id',
             { access_token: tokenResponse.access_token },
@@ -34,10 +33,8 @@ const Login = () => {
           const { redirect_to: redirectTo, is_admin: isAdmin, email: userEmail } = backendResponse.data;
           localStorage.setItem('loggedInUserEmail', userEmail ?? '');
 
-          // Update auth context
           authLogin(userEmail, isAdmin);
 
-          // Dev route to profile creation (after auth/session is established)
           if (String(import.meta.env.VITE_FORCE_PROFILE_CREATION).toLowerCase() === 'true') {
             navigate('/profile-creation');
             return;
@@ -64,93 +61,95 @@ const Login = () => {
 
   return (
     <>
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-
-          button:focus-visible {
-            outline: 3px solid #A4C5FF !important;
-            outline-offset: 2px !important;
-          }
-
-          button.text-button:focus-visible {
-            outline: 2px solid #A4C5FF !important;
-            outline-offset: 1px !important;
-            border-radius: 2px;
-          }
-
-          @media screen and (max-width: 768px) {
-            .right-column-responsive {
-              display: none !important;
-            }
-            .left-column-responsive {
-              flex: 1 !important;
-              width: 100% !important;
-            }
-          }
-        `}
-      </style>
-
       {/* Loading Animation Overlay */}
       {isLoading && (
         <div
-          style={styles.loadingOverlay}
+          className="
+            fixed inset-0 z-9999 flex items-center justify-center bg-black/50
+          "
           role="status"
           aria-live="polite"
           aria-label="Loading, please wait"
         >
-          <div style={styles.spinner}></div>
-          <span style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
-            Loading...
-          </span>
+          <div className="
+            size-20 animate-spin rounded-full border-8 border-[#f3f3f3]
+            border-t-brand-darkest
+          " />
+          <span className="sr-only">Loading...</span>
         </div>
       )}
 
-      <div style={styles.container}>
+      <div className="flex h-screen flex-row">
         {/* LEFT COLUMN */}
         <main
-          style={styles.leftColumn}
-          className="left-column-responsive"
+          className="
+            relative flex w-full flex-1 items-center justify-center
+            bg-brand-medium p-16
+            md:flex-1
+          "
           aria-label={isSignUpMode ? 'Sign up form' : 'Login form'}
         >
+          {/* Logo — CSS mask for SVG colouring; position/size via className */}
           <div
-            style={styles.logoStyle}
+            className="
+              absolute top-3.75 left-3.75 z-1000 h-4.75 min-h-4.75 w-17.5
+              min-w-17.5
+            "
+            style={{
+              backgroundColor: '#F1E0E0',
+              mask: `url(${QuantaidLogo}) no-repeat center`,
+              maskSize: 'contain',
+              WebkitMask: `url(${QuantaidLogo}) no-repeat center`,
+              WebkitMaskSize: 'contain',
+            }}
             role="img"
             aria-label="Quantaid logo"
           />
-          <div style={styles.formContainer}>
+
+          <div className="w-full max-w-120">
             {/* "Welcome back!" title — login mode only */}
             {!isSignUpMode && (
-              <h1 style={styles.welcomeTitle}>Welcome back!</h1>
+              <h1 className="
+                mb-12 text-center font-inter text-[2.2rem] font-normal
+                text-[#F1E0E0]
+              ">
+                Welcome back!
+              </h1>
             )}
 
             <button
               ref={googleButtonRef}
               type="button"
-              style={styles.googleButton}
+              className="
+                relative mx-auto flex h-12 w-100 max-w-100 min-w-min
+                cursor-pointer appearance-none items-center justify-center
+                overflow-hidden rounded-sm border-none bg-[#F2F2F2] px-3
+                text-center align-middle font-roboto text-base font-medium
+                tracking-[0.25px] whitespace-nowrap text-[#1F1F1F]
+                transition-[background-color,border-color,box-shadow]
+                duration-218 outline-none select-none
+              "
               onClick={() => login()}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#DFE1E3'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#F2F2F2'; }}
               aria-label={isSignUpMode ? 'Sign up with Google' : 'Continue with Google'}
             >
-              <img src={GoogleIcon} alt="" style={styles.googleIcon} aria-hidden="true" />
+              <img src={GoogleIcon} alt="" className="mr-[0.7rem] h-6.5" aria-hidden="true" />
               <span>{isSignUpMode ? 'Sign up with Google' : 'Continue with Google'}</span>
             </button>
 
             {/* Terms / privacy — sign-up mode only */}
             {isSignUpMode && (
-              <p style={{ ...styles.termsText, marginTop: '1.5rem' }}>
-                By clicking Sign up with Google, you acknowledge that you have read and agree to QuantAid's{' '}
+              <p className="mt-6 text-left text-sm leading-[1.4] text-[#B4B6BE]">
+                By clicking Sign up with Google, you acknowledge that you have read and agree to Quantaid's{' '}
                 <a
                   href="/terms"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={styles.linkStyle}
-                  onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
+                  className="
+                    font-normal text-brand-focus no-underline
+                    hover:underline
+                  "
                 >
                   Terms of Use
                 </a>{' '}
@@ -159,9 +158,10 @@ const Login = () => {
                   href="/terms"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={styles.linkStyle}
-                  onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
+                  className="
+                    font-normal text-brand-focus no-underline
+                    hover:underline
+                  "
                 >
                   Privacy Policy
                 </a>.
@@ -169,17 +169,18 @@ const Login = () => {
             )}
 
             {/* Toggle between sign-up and login */}
-            <p style={styles.loginLink}>
+            <p className="mt-0 text-center text-base font-normal text-[#C1C5D6]">
               {isSignUpMode ? (
                 <>
                   Already have an account?{' '}
                   <button
                     type="button"
                     onClick={toggleMode}
-                    style={styles.toggleButton}
-                    className="text-button"
-                    onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
+                    className="
+                      text-button cursor-pointer border-none bg-transparent p-0
+                      font-inter text-base font-normal text-brand-focus
+                      hover:underline
+                    "
                     aria-label="Switch to login mode"
                   >
                     Log in
@@ -191,10 +192,11 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={toggleMode}
-                    style={styles.toggleButton}
-                    className="text-button"
-                    onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
+                    className="
+                      text-button cursor-pointer border-none bg-transparent p-0
+                      font-inter text-base font-normal text-brand-focus
+                      hover:underline
+                    "
                     aria-label="Switch to sign up mode"
                   >
                     Sign up
@@ -205,16 +207,19 @@ const Login = () => {
           </div>
         </main>
 
-        {/* RIGHT COLUMN */}
+        {/* RIGHT COLUMN — hidden below md breakpoint */}
         <aside
-          style={styles.rightColumn}
-          className="right-column-responsive"
+          className="
+            hidden flex-1 items-center justify-center bg-brand-bg p-16
+            text-white
+            md:flex
+          "
           aria-label="Decorative illustration"
         >
           <img
             src={LoginGraphic}
             alt="Illustration of a student using Quantaid to learn quantum computing"
-            style={styles.rightContent}
+            className="mx-auto max-w-120"
           />
         </aside>
       </div>

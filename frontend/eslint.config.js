@@ -1,11 +1,14 @@
 import js from '@eslint/js'
-import globals from 'globals'
+import betterTailwindcss from 'eslint-plugin-better-tailwindcss'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   { ignores: ['dist'] },
+  // Better Tailwind recommended config
+  betterTailwindcss.configs['recommended'],
   {
     extends: [
       js.configs.recommended,
@@ -20,6 +23,23 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
+    settings: {
+      'better-tailwindcss': {
+        entryPoint: './src/index.css',
+        classRegex: [
+          '^global-',
+          '^quiz-',
+          '^feedback-',
+          '^profile-',
+          '^dashboard-',
+          '^lesson-',
+          '^nav-',
+          '^chat-',
+          '^breadcrumb-',
+          '^sidebar-'
+        ],
+      },
+    },
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
@@ -31,6 +51,14 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+
+      // ── Better TailwindCSS ────────────────────────────────────────
+      'better-tailwindcss/enforce-canonical-classes': 'warn',
+      'better-tailwindcss/enforce-consistent-class-order': 'warn',
+      'better-tailwindcss/no-duplicate-classes': 'error',
+      'better-tailwindcss/no-conflicting-classes': 'error',
+      'better-tailwindcss/no-unnecessary-whitespace': 'warn',
+      'better-tailwindcss/no-unknown-classes': 'off',
 
       // ── Type assertions & escape hatches — BANNED ─────────────────
       // Ban `as` type assertions entirely (forces proper typing)

@@ -43,6 +43,16 @@ const STATUS_CYCLE: Record<string, string> = {
   resolved: 'open',
 };
 
+const tabBase = 'py-2.5 px-5 bg-transparent border-none border-b-2 text-[15px] font-medium cursor-pointer font-inter';
+const tabInactive = `${tabBase} border-b-transparent text-[#9DA7B7]`;
+const tabActive   = `${tabBase} border-b-[#60a5fa] text-[#F9FAFB]`;
+
+const inputCls = 'w-full py-2.5 px-3 mb-2.5 bg-brand-bg border border-brand-border-dark rounded-md text-[#E5E7EB] text-sm font-inter box-border';
+const btnCls   = 'py-2 px-4.5 bg-[#353E54] text-[#E5E7EB] border-none rounded-md cursor-pointer text-sm font-medium font-inter';
+const thCls    = 'text-left py-3 px-3.5 border-b border-brand-card text-[#9DA7B7] font-medium whitespace-nowrap';
+const tdCls    = 'py-3 px-3.5 text-[#E5E7EB] align-top';
+const badgeCls = 'py-1 px-2.5 rounded-xl border-none text-xs font-semibold cursor-pointer font-inter whitespace-nowrap';
+
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'content' | 'feedback' | 'users'>('users');
 
@@ -68,9 +78,7 @@ const AdminDashboard: React.FC = () => {
     try {
       const params = new URLSearchParams({ limit: '50', skip: String(skip) });
       if (usersSearch) params.set('search', usersSearch);
-      const response = await api.get(
-        `/admin/users?${params.toString()}`,
-      );
+      const response = await api.get(`/admin/users?${params.toString()}`);
       const data = response.data;
       setUsersList(prev => append ? [...prev, ...data.users] : data.users);
       setUsersTotalCount(data.total_count);
@@ -84,17 +92,12 @@ const AdminDashboard: React.FC = () => {
   }, [usersSearch]);
 
   useEffect(() => {
-    if (activeTab === 'users') {
-      void fetchUsers();
-    }
+    if (activeTab === 'users') void fetchUsers();
   }, [activeTab, fetchUsers]);
 
   const handleToggleDisable = async (email: string) => {
     try {
-      const response = await api.patch(
-        `/admin/users/${encodeURIComponent(email)}/disable`,
-        {},
-      );
+      const response = await api.patch(`/admin/users/${encodeURIComponent(email)}/disable`, {});
       setUsersList(prev =>
         prev.map(u => u.user_id === email ? { ...u, disabled: response.data.disabled } : u)
       );
@@ -109,11 +112,7 @@ const AdminDashboard: React.FC = () => {
     try {
       const params = new URLSearchParams({ limit: '50', skip: String(skip) });
       if (feedbackFilter) params.set('status', feedbackFilter);
-
-      const response = await api.get(
-        `/admin/feedback?${params.toString()}`,
-      );
-
+      const response = await api.get(`/admin/feedback?${params.toString()}`);
       const data = response.data;
       setFeedbackList(prev => append ? [...prev, ...data.feedback] : data.feedback);
       setFeedbackTotal(data.total_count);
@@ -126,18 +125,13 @@ const AdminDashboard: React.FC = () => {
   }, [feedbackFilter]);
 
   useEffect(() => {
-    if (activeTab === 'feedback') {
-      void fetchFeedback();
-    }
+    if (activeTab === 'feedback') void fetchFeedback();
   }, [activeTab, fetchFeedback]);
 
   const handleStatusToggle = async (id: string, currentStatus: string) => {
     const newStatus = STATUS_CYCLE[currentStatus] || 'open';
     try {
-      await api.patch(
-        `/admin/feedback/${id}/status`,
-        { status: newStatus },
-      );
+      await api.patch(`/admin/feedback/${id}/status`, { status: newStatus });
       setFeedbackList(prev =>
         prev.map(fb => fb._id === id ? { ...fb, status: newStatus } : fb)
       );
@@ -149,9 +143,7 @@ const AdminDashboard: React.FC = () => {
   const handleDeleteFeedback = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this feedback?')) return;
     try {
-      await api.delete(
-        `/admin/feedback/${id}`,
-      );
+      await api.delete(`/admin/feedback/${id}`);
       setFeedbackList(prev => prev.filter(fb => fb._id !== id));
       setFeedbackTotal(prev => prev - 1);
     } catch (error) {
@@ -163,12 +155,7 @@ const AdminDashboard: React.FC = () => {
     try {
       const params = new URLSearchParams();
       if (feedbackFilter) params.set('status', feedbackFilter);
-      const url = `/admin/feedback/export?${params.toString()}`;
-
-      const response = await api.get(url, {
-        responseType: 'blob',
-      });
-
+      const response = await api.get(`/admin/feedback/export?${params.toString()}`, { responseType: 'blob' });
       const blob = new Blob([response.data], { type: 'text/csv' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
@@ -191,95 +178,88 @@ const AdminDashboard: React.FC = () => {
 
   const formatDate = (dateStr: string) => {
     try {
-      const d = new Date(dateStr);
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     } catch {
       return dateStr;
     }
   };
 
   return (
-    <div style={styles.page}>
-      <h1 style={styles.heading}>Admin Dashboard</h1>
+    <div className="
+      min-h-screen bg-[#0f1729] px-8 py-6 font-inter text-[#E5E7EB]
+    ">
+      <h1 className="mb-5 text-2xl font-semibold text-[#F9FAFB]">Admin Dashboard</h1>
 
       {/* Tab bar */}
-      <div style={styles.tabBar}>
-        <button
-          style={activeTab === 'users' ? styles.tabActive : styles.tab}
-          onClick={() => setActiveTab('users')}
-        >
+      <div className="mb-6 flex gap-0 border-b border-brand-border-dark">
+        <button className={activeTab === 'users' ? tabActive : tabInactive} onClick={() => setActiveTab('users')}>
           Users {usersTotalAll > 0 && `(${usersTotalAll})`}
         </button>
-        <button
-          style={activeTab === 'content' ? styles.tabActive : styles.tab}
-          onClick={() => setActiveTab('content')}
-        >
+        <button className={activeTab === 'content' ? tabActive : tabInactive} onClick={() => setActiveTab('content')}>
           Content Management
         </button>
-        <button
-          style={activeTab === 'feedback' ? styles.tabActive : styles.tab}
-          onClick={() => setActiveTab('feedback')}
-        >
+        <button className={activeTab === 'feedback' ? tabActive : tabInactive} onClick={() => setActiveTab('feedback')}>
           Feedback {feedbackTotal > 0 && `(${feedbackTotal})`}
         </button>
       </div>
 
       {/* Content Management Tab */}
-      {activeTab === 'content' && (
-        <ContentManager />
-      )}
+      {activeTab === 'content' && <ContentManager />}
 
       {/* Users Tab */}
       {activeTab === 'users' && (
         <div>
-          {/* Search bar */}
-          <div style={styles.filterBar}>
+          <div className="mb-4 flex items-center gap-3">
             <input
               type="text"
               placeholder="Search by email or name..."
               value={usersSearch}
               onChange={(e) => setUsersSearch(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') void fetchUsers(); }}
-              style={{ ...styles.input, marginBottom: 0, maxWidth: 320 }}
+              className={`
+                ${inputCls}
+                mb-0 max-w-80
+              `}
             />
-            <button onClick={() => { void fetchUsers(); }} style={styles.button}>
-              Search
-            </button>
-            <span style={styles.countLabel}>
-              {usersTotal === usersTotalAll
-                ? `${usersTotalAll} users`
-                : `${usersTotal} of ${usersTotalAll} users`}
+            <button onClick={() => { void fetchUsers(); }} className={btnCls}>Search</button>
+            <span className="flex-1 text-sm text-[#6B7280]">
+              {usersTotal === usersTotalAll ? `${usersTotalAll} users` : `${usersTotal} of ${usersTotalAll} users`}
             </span>
           </div>
 
-          {/* Users table */}
-          <div style={styles.tableWrapper}>
-            <table style={styles.table}>
+          <div className="overflow-x-auto rounded-lg border border-brand-card">
+            <table className="w-full border-collapse bg-brand-panel text-sm">
               <thead>
                 <tr>
-                  <th style={styles.th}>Email</th>
-                  <th style={styles.th}>Name</th>
-                  <th style={styles.th}>Auth</th>
-                  <th style={styles.th}>Profile</th>
-                  <th style={styles.th}>Role</th>
-                  <th style={styles.th}>Created</th>
-                  <th style={styles.th}>Last Login</th>
-                  <th style={styles.th}>Status</th>
+                  <th className={thCls}>Email</th>
+                  <th className={thCls}>Name</th>
+                  <th className={thCls}>Auth</th>
+                  <th className={thCls}>Profile</th>
+                  <th className={thCls}>Role</th>
+                  <th className={thCls}>Created</th>
+                  <th className={thCls}>Last Login</th>
+                  <th className={thCls}>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {usersList.map((user) => (
-                  <tr key={user.user_id} style={styles.tr}>
-                    <td style={{ ...styles.td, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <tr key={user.user_id} className="border-b border-[#1e2d4a]">
+                    <td className={`
+                      ${tdCls}
+                      max-w-55 truncate
+                    `}>
                       {user.user_id}
                     </td>
-                    <td style={styles.td}>{user.name || '—'}</td>
-                    <td style={{ ...styles.td, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    <td className={tdCls}>{user.name || '—'}</td>
+                    <td className={`
+                      ${tdCls}
+                      flex flex-wrap gap-1
+                    `}>
                       {user.auth_methods.map((method) => (
                         <span
                           key={method}
+                          className={badgeCls}
                           style={{
-                            ...styles.statusBadge,
                             backgroundColor: method === 'google' ? '#1a3b2a' : '#1e3a5f',
                             color: method === 'google' ? '#4ade80' : '#60a5fa',
                           }}
@@ -287,29 +267,29 @@ const AdminDashboard: React.FC = () => {
                           {method === 'google' ? 'Google' : 'Email'}
                         </span>
                       ))}
-                      {user.auth_methods.length === 0 && (
-                        <span style={{ color: '#6B7280' }}>—</span>
-                      )}
+                      {user.auth_methods.length === 0 && <span className="
+                        text-[#6B7280]
+                      ">—</span>}
                     </td>
-                    <td style={styles.td}>
+                    <td className={tdCls}>
                       {user.profile_complete
-                        ? <span style={{ color: '#4ade80' }}>Complete</span>
-                        : <span style={{ color: '#6B7280' }}>Incomplete</span>
+                        ? <span className="text-success">Complete</span>
+                        : <span className="text-[#6B7280]">Incomplete</span>
                       }
                     </td>
-                    <td style={styles.td}>
+                    <td className={tdCls}>
                       {user.is_admin
-                        ? <span style={{ color: '#facc15', fontWeight: 600 }}>Admin</span>
-                        : <span style={{ color: '#6B7280' }}>User</span>
+                        ? <span className="font-semibold text-[#facc15]">Admin</span>
+                        : <span className="text-[#6B7280]">User</span>
                       }
                     </td>
-                    <td style={styles.td}>{user.createdAt ? formatDate(user.createdAt) : '—'}</td>
-                    <td style={styles.td}>{user.lastLoginAt ? formatDate(user.lastLoginAt) : '—'}</td>
-                    <td style={styles.td}>
+                    <td className={tdCls}>{user.createdAt ? formatDate(user.createdAt) : '—'}</td>
+                    <td className={tdCls}>{user.lastLoginAt ? formatDate(user.lastLoginAt) : '—'}</td>
+                    <td className={tdCls}>
                       <button
                         onClick={() => { void handleToggleDisable(user.user_id); }}
+                        className={badgeCls}
                         style={{
-                          ...styles.statusBadge,
                           backgroundColor: user.disabled ? '#5f1e1e' : '#1a3b2a',
                           color: user.disabled ? '#fa6060' : '#4ade80',
                         }}
@@ -322,27 +302,20 @@ const AdminDashboard: React.FC = () => {
                 ))}
                 {usersList.length === 0 && !usersLoading && (
                   <tr>
-                    <td colSpan={8} style={{ ...styles.td, textAlign: 'center', color: '#6B7280' }}>
-                      No users found.
-                    </td>
+                    <td colSpan={8} className={`
+                      ${tdCls}
+                      text-center text-[#6B7280]
+                    `}>No users found.</td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
 
-          {usersLoading && (
-            <p style={{ color: '#9DA7B7', textAlign: 'center', marginTop: 16 }}>Loading...</p>
-          )}
-
+          {usersLoading && <p className="mt-4 text-center text-[#9DA7B7]">Loading...</p>}
           {usersHasMore && !usersLoading && (
-            <div style={{ textAlign: 'center', marginTop: 16 }}>
-              <button
-                onClick={() => { void fetchUsers(usersList.length, true); }}
-                style={styles.button}
-              >
-                Load More
-              </button>
+            <div className="mt-4 text-center">
+              <button onClick={() => { void fetchUsers(usersList.length, true); }} className={btnCls}>Load More</button>
             </div>
           )}
         </div>
@@ -351,40 +324,43 @@ const AdminDashboard: React.FC = () => {
       {/* Feedback Tab */}
       {activeTab === 'feedback' && (
         <div>
-          {/* Filter bar */}
-          <div style={styles.filterBar}>
+          <div className="mb-4 flex items-center gap-3">
             <select
               value={feedbackFilter}
               onChange={(e) => setFeedbackFilter(e.target.value)}
-              style={styles.filterSelect}
+              className="
+                cursor-pointer rounded-md border border-brand-border-dark
+                bg-brand-panel px-3 py-2 font-inter text-sm text-[#E5E7EB]
+              "
             >
               <option value="">All Statuses</option>
               <option value="open">Open</option>
               <option value="in_progress">In Progress</option>
               <option value="resolved">Resolved</option>
             </select>
-
-            <span style={styles.countLabel}>
-              {feedbackTotal} total
-            </span>
-
-            <button onClick={() => { void handleExportCSV(); }} style={styles.exportButton}>
+            <span className="flex-1 text-sm text-[#6B7280]">{feedbackTotal} total</span>
+            <button onClick={() => { void handleExportCSV(); }} className="
+              cursor-pointer rounded-md border border-[#2563eb] bg-[#1e3a5f]
+              px-4 py-2 font-inter text-sm font-medium text-[#60a5fa]
+            ">
               Export CSV
             </button>
           </div>
 
-          {/* Table */}
-          <div style={styles.tableWrapper}>
-            <table style={styles.table}>
+          <div className="overflow-x-auto rounded-lg border border-brand-card">
+            <table className="w-full border-collapse bg-brand-panel text-sm">
               <thead>
                 <tr>
-                  <th style={styles.th}>Date</th>
-                  <th style={styles.th}>User</th>
-                  <th style={styles.th}>Category</th>
-                  <th style={{ ...styles.th, minWidth: 200 }}>Feedback</th>
-                  <th style={styles.th}>Status</th>
-                  <th style={styles.th}>Screenshot</th>
-                  <th style={styles.th}>Actions</th>
+                  <th className={thCls}>Date</th>
+                  <th className={thCls}>User</th>
+                  <th className={thCls}>Category</th>
+                  <th className={`
+                    ${thCls}
+                    min-w-50
+                  `}>Feedback</th>
+                  <th className={thCls}>Status</th>
+                  <th className={thCls}>Screenshot</th>
+                  <th className={thCls}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -397,54 +373,59 @@ const AdminDashboard: React.FC = () => {
                   const statusColor = STATUS_COLORS[fb.status];
 
                   return (
-                    <tr key={fb._id} style={styles.tr}>
-                      <td style={styles.td}>{formatDate(fb.created_at)}</td>
-                      <td style={styles.td}>
-                        {fb.user_id === 'anonymous' ? 'Anonymous' : fb.user_id}
-                      </td>
-                      <td style={styles.td}>{fb.category}</td>
-                      <td style={styles.td}>
+                    <tr key={fb._id} className="border-b border-[#1e2d4a]">
+                      <td className={tdCls}>{formatDate(fb.created_at)}</td>
+                      <td className={tdCls}>{fb.user_id === 'anonymous' ? 'Anonymous' : fb.user_id}</td>
+                      <td className={tdCls}>{fb.category}</td>
+                      <td className={tdCls}>
                         {displayText}
                         {needsTruncate && (
                           <button
                             onClick={() => toggleExpand(fb._id)}
-                            style={styles.expandButton}
+                            className="
+                              ml-1.5 cursor-pointer border-none bg-transparent
+                              p-0 font-inter text-[13px] text-[#60a5fa]
+                            "
                           >
                             {isExpanded ? 'Less' : 'More'}
                           </button>
                         )}
                       </td>
-                      <td style={styles.td}>
+                      <td className={tdCls}>
                         <button
                           onClick={() => { void handleStatusToggle(fb._id, fb.status); }}
-                          style={{
-                            ...styles.statusBadge,
-                            backgroundColor: statusColor.bg,
-                            color: statusColor.text,
-                          }}
+                          className={badgeCls}
+                          style={{ backgroundColor: statusColor.bg, color: statusColor.text }}
                           title="Click to cycle status"
                         >
                           {STATUS_LABELS[fb.status] || fb.status}
                         </button>
                       </td>
-                      <td style={styles.td}>
+                      <td className={tdCls}>
                         {fb.has_screenshot ? (
                           <a
                             href={`${BACKEND_URL}/feedback_file/${fb.screenshot_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={styles.viewLink}
+                            className="
+                              text-[13px] font-medium text-[#60a5fa]
+                              no-underline
+                            "
                           >
                             View
                           </a>
                         ) : (
-                          <span style={{ color: '#6B7280' }}>—</span>
+                          <span className="text-[#6B7280]">—</span>
                         )}
                       </td>
-                      <td style={styles.td}>
+                      <td className={tdCls}>
                         <button
                           onClick={() => { void handleDeleteFeedback(fb._id); }}
-                          style={styles.deleteButton}
+                          className="
+                            cursor-pointer rounded-md border-none bg-[#5f1e1e]
+                            px-2.5 py-1 font-inter text-xs font-semibold
+                            whitespace-nowrap text-error
+                          "
                           title="Delete feedback"
                         >
                           Delete
@@ -455,197 +436,26 @@ const AdminDashboard: React.FC = () => {
                 })}
                 {feedbackList.length === 0 && !feedbackLoading && (
                   <tr>
-                    <td colSpan={7} style={{ ...styles.td, textAlign: 'center', color: '#6B7280' }}>
-                      No feedback found.
-                    </td>
+                    <td colSpan={7} className={`
+                      ${tdCls}
+                      text-center text-[#6B7280]
+                    `}>No feedback found.</td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
 
-          {feedbackLoading && (
-            <p style={{ color: '#9DA7B7', textAlign: 'center', marginTop: 16 }}>Loading...</p>
-          )}
-
+          {feedbackLoading && <p className="mt-4 text-center text-[#9DA7B7]">Loading...</p>}
           {feedbackHasMore && !feedbackLoading && (
-            <div style={{ textAlign: 'center', marginTop: 16 }}>
-              <button
-                onClick={() => { void fetchFeedback(feedbackList.length, true); }}
-                style={styles.button}
-              >
-                Load More
-              </button>
+            <div className="mt-4 text-center">
+              <button onClick={() => { void fetchFeedback(feedbackList.length, true); }} className={btnCls}>Load More</button>
             </div>
           )}
         </div>
       )}
     </div>
   );
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    padding: '24px 32px',
-    backgroundColor: '#0f1729',
-    minHeight: '100vh',
-    color: '#E5E7EB',
-    fontFamily: "'Inter', sans-serif",
-  },
-  heading: {
-    fontSize: 24,
-    fontWeight: 600,
-    marginBottom: 20,
-    color: '#F9FAFB',
-  },
-  tabBar: {
-    display: 'flex',
-    gap: 0,
-    marginBottom: 24,
-    borderBottom: '1px solid #353E56',
-  },
-  tab: {
-    padding: '10px 20px',
-    background: 'transparent',
-    border: 'none',
-    borderBottom: '2px solid transparent',
-    color: '#9DA7B7',
-    fontSize: 15,
-    fontWeight: 500,
-    cursor: 'pointer',
-    fontFamily: "'Inter', sans-serif",
-  },
-  tabActive: {
-    padding: '10px 20px',
-    background: 'transparent',
-    border: 'none',
-    borderBottom: '2px solid #60a5fa',
-    color: '#F9FAFB',
-    fontSize: 15,
-    fontWeight: 500,
-    cursor: 'pointer',
-    fontFamily: "'Inter', sans-serif",
-  },
-  input: {
-    width: '100%',
-    padding: '10px 12px',
-    marginBottom: 10,
-    backgroundColor: '#030E29',
-    border: '1px solid #353E56',
-    borderRadius: 6,
-    color: '#E5E7EB',
-    fontSize: 14,
-    fontFamily: "'Inter', sans-serif",
-    boxSizing: 'border-box' as const,
-  },
-  button: {
-    padding: '8px 18px',
-    backgroundColor: '#353E54',
-    color: '#E5E7EB',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontSize: 14,
-    fontWeight: 500,
-    fontFamily: "'Inter', sans-serif",
-  },
-  filterBar: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
-  },
-  filterSelect: {
-    padding: '8px 12px',
-    backgroundColor: '#17213A',
-    border: '1px solid #353E56',
-    borderRadius: 6,
-    color: '#E5E7EB',
-    fontSize: 14,
-    fontFamily: "'Inter', sans-serif",
-    cursor: 'pointer',
-  },
-  countLabel: {
-    color: '#6B7280',
-    fontSize: 14,
-    flex: 1,
-  },
-  exportButton: {
-    padding: '8px 16px',
-    backgroundColor: '#1e3a5f',
-    color: '#60a5fa',
-    border: '1px solid #2563eb',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontSize: 14,
-    fontWeight: 500,
-    fontFamily: "'Inter', sans-serif",
-  },
-  tableWrapper: {
-    overflowX: 'auto' as const,
-    borderRadius: 8,
-    border: '1px solid #253655',
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse' as const,
-    backgroundColor: '#17213A',
-    fontSize: 14,
-  },
-  th: {
-    textAlign: 'left' as const,
-    padding: '12px 14px',
-    borderBottom: '1px solid #253655',
-    color: '#9DA7B7',
-    fontWeight: 500,
-    whiteSpace: 'nowrap' as const,
-  },
-  tr: {
-    borderBottom: '1px solid #1e2d4a',
-  },
-  td: {
-    padding: '12px 14px',
-    color: '#E5E7EB',
-    verticalAlign: 'top' as const,
-  },
-  statusBadge: {
-    padding: '4px 10px',
-    borderRadius: 12,
-    border: 'none',
-    fontSize: 12,
-    fontWeight: 600,
-    cursor: 'pointer',
-    fontFamily: "'Inter', sans-serif",
-    whiteSpace: 'nowrap' as const,
-  },
-  expandButton: {
-    background: 'none',
-    border: 'none',
-    color: '#60a5fa',
-    cursor: 'pointer',
-    fontSize: 13,
-    marginLeft: 6,
-    padding: 0,
-    fontFamily: "'Inter', sans-serif",
-  },
-  viewLink: {
-    color: '#60a5fa',
-    textDecoration: 'none',
-    fontSize: 13,
-    fontWeight: 500,
-  },
-  deleteButton: {
-    padding: '4px 10px',
-    backgroundColor: '#5f1e1e',
-    color: '#fa6060',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontSize: 12,
-    fontWeight: 600,
-    fontFamily: "'Inter', sans-serif",
-    whiteSpace: 'nowrap' as const,
-  },
 };
 
 export default AdminDashboard;

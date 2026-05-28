@@ -134,7 +134,7 @@ export function useDashboardLayout(): UseDashboardLayoutReturn {
       marginLeft: currentSidebarWidth,
       width: `calc(100vw - ${currentSidebarWidth}px)`,
       flex: 1,
-      transition: effectiveDuration > 0 ? `all ${effectiveDuration}ms ${ANIMATION_EASING} !important` : 'none !important',
+      transition: effectiveDuration > 0 ? `all ${effectiveDuration}ms ${ANIMATION_EASING}` : 'none',
     };
   }, [currentSidebarWidth, chatOpen, chatWidth, effectiveDuration]);
 

@@ -1,7 +1,6 @@
 import React from 'react';
 import Reading from '../common/Reading';
 import HighlightableInstructionsForReading from '../common/HighlightableInstructionsForReadings';
-import { styles } from './DashboardStyles';
 import type { Course, Topic } from '@/types/course';
 import type { Question } from '@/types/quiz';
 
@@ -42,18 +41,27 @@ const LessonView: React.FC<LessonViewProps> = ({
   }
 
   return (
-    <div style={styles.lessonContainer}>
-      <div className='lesson-header' style={styles.lessonHeader}>
+    <div className="mx-auto max-w-250 py-5">
+      <div className="lesson-header mb-8 select-none">
         {renderBreadcrumb()}
 
-        <h2 style={styles.lessonTitle}>{topicInfo?.title || 'Lesson'}</h2>
+        <h2 className="
+          m-0 mx-auto cursor-text font-inter text-[36px] font-medium text-white
+        ">{topicInfo?.title || 'Lesson'}</h2>
         {topicInfo?.description && (
-          <p style={styles.lessonDescription}>{topicInfo.description}</p>
+          <p className="
+            cursor-text font-inter text-lg leading-[1.6] font-normal text-white
+          ">{topicInfo.description}</p>
         )}
 
         {currentQuiz.length > 0 && (
           <button
-            style={styles.takeQuizButton}
+            className="
+              my-6.25 mb-17.5 block cursor-pointer rounded-lg border-none
+              bg-brand-light-blue px-3 py-2 font-inter text-[1.15rem]
+              leading-[1.6] font-semibold text-brand-bg
+              transition-[background-color] duration-200
+            "
             onClick={handleOpenQuiz}
             aria-label="Start quiz for this lesson"
           >
@@ -61,7 +69,7 @@ const LessonView: React.FC<LessonViewProps> = ({
           </button>
         )}
         {currentQuiz.length === 0 && (
-          <p style={styles.noQuizText}>Quiz coming soon for this lesson!</p>
+          <p className="mt-10 text-center text-base text-brand-blue">Quiz coming soon for this lesson!</p>
         )}
       </div>
 
@@ -79,11 +87,21 @@ const LessonView: React.FC<LessonViewProps> = ({
       </div>
 
       {currentQuiz.length > 0 && (
-        <div style={styles.quizPromptSection} className='lesson-header'>
-          <p style={styles.lessonDescription}>
+        <div className="lesson-header mt-17.5 cursor-text">
+          <p className="
+            cursor-text font-inter text-lg leading-[1.6] font-normal text-white
+          ">
             Ready to see if you've grasped these concepts? Take this quiz and find out where you stand!
           </p>
-          <button style={styles.takeQuizButton} onClick={handleOpenQuiz}>
+          <button
+            className="
+              my-6.25 mb-17.5 block cursor-pointer rounded-lg border-none
+              bg-brand-light-blue px-3 py-2 font-inter text-[1.15rem]
+              leading-[1.6] font-semibold text-brand-bg
+              transition-[background-color] duration-200
+            "
+            onClick={handleOpenQuiz}
+          >
             START QUIZ
           </button>
         </div>
