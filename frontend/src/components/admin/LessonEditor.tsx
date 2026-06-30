@@ -77,7 +77,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ initialCourseId, onBack }) 
 
   const fetchLessons = useCallback(async () => {
     try {
-      const res = await api.get('/api/lessons');
+      const res = await api.get('/lessons');
       setLessons(res.data);
     } catch (err) {
       console.error('Error fetching lessons:', err);
@@ -98,7 +98,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ initialCourseId, onBack }) 
       return;
     }
     let cancelled = false;
-    api.get(`/api/lessons/${selectedCourseId}`)
+    api.get(`/lessons/${selectedCourseId}`)
       .then(res => {
         if (cancelled) return;
         setLesson(res.data);

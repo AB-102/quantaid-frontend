@@ -88,7 +88,7 @@ const Reading: React.FC<Props> = ({
     setFetchError(false);
     setApiLesson(null);
 
-    api.get(`/api/lessons/${courseId}`)
+    api.get(`/lessons/${courseId}`)
       .then(res => {
         if (!cancelled) setApiLesson(res.data);
       })

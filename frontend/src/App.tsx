@@ -38,7 +38,7 @@ const QuizPage: React.FC = () => {
 
   useEffect(() => {
     if (isNaN(id)) return;
-    api.get(`/api/lessons/${id}`)
+    api.get(`/lessons/${id}`)
       .then(res => { setQuestions(res.data.quiz || []); })
       .catch(() => { setLoadError(true); });
   }, [id]);

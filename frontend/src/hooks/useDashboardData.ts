@@ -68,7 +68,7 @@ export function useDashboardData({ currentLesson }: UseDashboardDataOptions): Us
       return;
     }
     let cancelled = false;
-    api.get(`/api/lessons/${currentLesson}`)
+    api.get(`/lessons/${currentLesson}`)
       .then(res => res.data)
       .then(data => {
         if (cancelled) return;
@@ -101,7 +101,7 @@ export function useDashboardData({ currentLesson }: UseDashboardDataOptions): Us
 
   useEffect(() => {
     let cancelled = false;
-    api.get('/api/dashboard-config')
+    api.get('/dashboard-config')
       .then(res => res.data)
       .then(data => {
         if (cancelled || !data) return;
