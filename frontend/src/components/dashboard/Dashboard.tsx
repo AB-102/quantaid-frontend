@@ -20,7 +20,6 @@ import { useDashboardData } from '@/hooks/useDashboardData';
 
 
 const Dashboard: React.FC = () => {
-  const FIRST_TIME_USER_EMAIL = import.meta.env.VITE_FIRST_TIME_USER_EMAIL;
   const { logout: authLogout } = useAuth();
 
   /* ---------- layout (sidebar / chat / resize) -------------------- */
@@ -140,13 +139,12 @@ const Dashboard: React.FC = () => {
       return;
     }
 
-    // Check if this is the user's first lesson ever
+    // Check if this is the user's first lesson ever. The backend decides whether to remember it
+    // (it never does for its FIRST_TIME_USER_EMAIL test account).
     if (!data.hasViewedFirstLesson) {
       setShowOnboardingPopup(true);
-      if (data.userEmail !== FIRST_TIME_USER_EMAIL) {
-        data.setHasViewedFirstLesson(true);
-        void data.saveFirstLessonView();
-      }
+      data.setHasViewedFirstLesson(true);
+      void data.saveFirstLessonView();
     }
 
     setCurrentLesson(topicId);

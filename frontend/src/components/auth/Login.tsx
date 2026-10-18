@@ -35,11 +35,6 @@ const Login = () => {
 
           authLogin(userEmail, isAdmin);
 
-          if (String(import.meta.env.VITE_FORCE_PROFILE_CREATION).toLowerCase() === 'true') {
-            navigate('/profile-creation');
-            return;
-          }
-
           if (isAdmin) {
             navigate('/admin-dashboard');
           } else if (redirectTo === 'map') {
