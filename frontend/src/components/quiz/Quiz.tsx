@@ -86,7 +86,7 @@ const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, le
 
     try {
       console.log("Sending quiz result:", quizResultData);
-      const response = await api.post('/save_quiz_result', quizResultData);
+      const response = await api.post('/me/quiz-results', quizResultData);
       console.log("Quiz result saved successfully:", response.data);
       setProgressSaved(true);
     } catch (error) {

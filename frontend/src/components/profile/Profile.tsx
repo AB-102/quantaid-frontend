@@ -51,7 +51,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, userName: 
   const fetchProfile = useCallback(() => {
     setLoading(true);
     void api
-      .get('/get_user_profile')
+      .get('/me/profile')
       .then(res => {
         const d = res.data;
         // Parse education: educationLevel is stored as "High School - 10th Grade" or "College - Sophomore" etc
@@ -179,7 +179,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, userName: 
     const form = new FormData();
     form.append('picture', file);
     void api
-      .post('/save_profile_picture', form, {
+      .put('/me/profile-picture', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       .then(res => setData(d => ({ ...d, profilePicture: res.data.url })))
@@ -210,8 +210,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, userName: 
     setSaving(true);
     setSaveMessage('');
     void api
-      .post(
-        '/save_profile',
+      .put(
+        '/me/profile',
         {
           educationCategory: data.educationCategory,
           educationLevel: data.educationLevel,

@@ -25,6 +25,5 @@ export interface ProfileData {
   favoriteHobbies: string[];
   customHobbies: string;
   hobbyPersonalization: boolean;
-  hasPassword: boolean;
   hasGoogle: boolean;
 }

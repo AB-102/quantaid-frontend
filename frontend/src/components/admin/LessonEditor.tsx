@@ -5,9 +5,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import api, { BACKEND_URL } from '@/api';
 
+// The backend sends {"detail": "message"} for expected errors; validation errors carry a list instead
 function getAxiosErrorMessage(err: unknown, fallback: string): string {
-  if (axios.isAxiosError<{ error?: string }>(err) && err.response?.data.error) {
-    return err.response.data.error;
+  if (axios.isAxiosError<{ detail?: unknown }>(err) && typeof err.response?.data.detail === 'string') {
+    return err.response.data.detail;
   }
   return fallback;
 }
@@ -16,13 +17,13 @@ import type { ContentBlock } from '@/types/lesson';
 import type { Question as QuizQuestion } from '@/types/quiz';
 
 interface LessonSummary {
-  _id: string;
+  id: string;
   courseId: number;
   title: string;
 }
 
 interface LessonFull {
-  _id: string;
+  id: string;
   courseId: number;
   title: string;
   blocks: ContentBlock[];
@@ -153,7 +154,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ initialCourseId, onBack }) 
     try {
       const formData = new FormData();
       formData.append('image', file);
-      const res = await api.post('/admin/upload_content_image', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const res = await api.post('/admin/images', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       updateBlock(idx, { fileId: res.data.fileId });
       setMessage('Image uploaded');
     } catch (err) {
@@ -169,7 +170,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ initialCourseId, onBack }) 
     if (selectedCourseId === null) return;
     setSaving(true); setMessage('');
     try {
-      await api.put(`/admin/lessons/${selectedCourseId}`, { title, blocks, quiz });
+      await api.patch(`/admin/lessons/${selectedCourseId}`, { title, blocks, quiz });
       setMessage('Lesson saved successfully');
       void fetchLessons();
     } catch (err: unknown) {
@@ -257,7 +258,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ initialCourseId, onBack }) 
                   alignItems: block.align === 'left' ? 'flex-start' : block.align === 'right' ? 'flex-end' : 'center',
                   margin: '24px 0', userSelect: 'none',
                 }}>
-                <img src={`${BACKEND_URL}/file/${block.fileId}`} alt="" aria-hidden="true"
+                <img src={`${BACKEND_URL}/api/files/${block.fileId}`} alt="" aria-hidden="true"
                   style={{ maxWidth: `${block.width || 80}%`, borderRadius: 8, objectFit: 'contain' }}
                   draggable={false}
                 />
@@ -290,7 +291,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ initialCourseId, onBack }) 
           Drag order determines courseId and display order in the dashboard.
         </p>
         {reorderList.map((l, idx) => (
-          <div key={l._id} className="
+          <div key={l.id} className="
             mb-1 flex items-center gap-3 rounded-md border border-brand-card
             bg-brand-panel px-3.5 py-2.5
           ">
@@ -461,7 +462,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ initialCourseId, onBack }) 
                             <button onClick={() => handleImageUpload(idx)} className={uploadBtnCls} disabled={uploading === idx}>
                               {uploading === idx ? 'Uploading...' : block.fileId ? 'Replace Image' : 'Upload Image'}
                             </button>
-                            {block.fileId && <img src={`${BACKEND_URL}/file/${block.fileId}`} alt="preview" className="
+                            {block.fileId && <img src={`${BACKEND_URL}/api/files/${block.fileId}`} alt="preview" className="
                               h-10 rounded-sm object-contain
                             " />}
                           </div>

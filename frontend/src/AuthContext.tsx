@@ -31,10 +31,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await api.get('/auth/check');
+        const res = await api.get('/auth/session');
         const data = res.data;
         setIsLoggedIn(data.authenticated);
-        setIsAdmin(data.is_admin);
+        setIsAdmin(data.isAdmin);
         setUserEmail(data.email);
       } catch {
         setIsLoggedIn(false);

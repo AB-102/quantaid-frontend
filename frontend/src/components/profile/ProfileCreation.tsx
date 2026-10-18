@@ -33,10 +33,10 @@ const ProfileCreation: React.FC = () => {
   // On mount, fetch user ID
   useEffect(() => {
     api
-      .get('/get_user_id')
+      .get('/auth/session')
       .then((response) => {
-        const uid = response.data.user_id;
-        console.log('ProfileCreation: session user_id =', uid);
+        const uid = response.data.authenticated ? response.data.email : '';
+        console.log('ProfileCreation: session email =', uid);
         setUserId(uid);
       })
       .catch(() => {
@@ -98,7 +98,6 @@ const ProfileCreation: React.FC = () => {
   /** ------------------ SUBMIT PROFILE ------------------ **/
   const handleSubmit = () => {
     const dataToSend = {
-      user_id: userId,
       whereHeard: formData.whereHeard,
       otherWhereHeard: formData.otherWhereHeard,
       educationCategory: formData.educationCategory,
@@ -112,7 +111,7 @@ const ProfileCreation: React.FC = () => {
     };
 
     api
-      .post('/save_profile', dataToSend)
+      .put('/me/profile', dataToSend)
       .then((response) => {
         console.log('Profile saved:', response.data);
         setShowVideoPopup(true);

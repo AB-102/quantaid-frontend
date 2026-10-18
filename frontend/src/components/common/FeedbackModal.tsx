@@ -119,15 +119,13 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
   const handleSubmit = () => {
     const submit = async () => {
       try {
+        const formData = new FormData();
+        formData.append('category', selectedCategory);
+        formData.append('feedback', feedbackText);
         if (selectedFile) {
-          const formData = new FormData();
-          formData.append('category', selectedCategory);
-          formData.append('feedback', feedbackText);
           formData.append('screenshot', selectedFile);
-          await api.post('/submit_feedback', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-        } else {
-          await api.post('/submit_feedback', { category: selectedCategory, feedback: feedbackText });
         }
+        await api.post('/feedback', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
         alert('Thank you for your feedback!');
         handleClose();
       } catch (err: unknown) {

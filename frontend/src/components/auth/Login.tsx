@@ -27,10 +27,10 @@ const Login = () => {
         setIsLoading(true);
         try {
           const backendResponse = await api.post(
-            '/append_user_id',
-            { access_token: tokenResponse.access_token },
+            '/auth/google',
+            { accessToken: tokenResponse.access_token },
           );
-          const { redirect_to: redirectTo, is_admin: isAdmin, email: userEmail } = backendResponse.data;
+          const { redirectTo, isAdmin, email: userEmail } = backendResponse.data;
           localStorage.setItem('loggedInUserEmail', userEmail ?? '');
 
           authLogin(userEmail, isAdmin);

@@ -14,7 +14,6 @@ vi.mock('@/api', () => ({
         favoriteHobbies: [],
         customHobbies: '',
         hobbyPersonalization: true,
-        hasPassword: false,
         hasGoogle: true,
       },
     }),

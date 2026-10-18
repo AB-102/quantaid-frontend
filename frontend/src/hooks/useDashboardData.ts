@@ -124,7 +124,7 @@ export function useDashboardData({ currentLesson }: UseDashboardDataOptions): Us
     console.log("Fetching user progress...");
     setIsLoadingProgress(true);
     try {
-      const response = await api.get('/get_user_progress');
+      const response = await api.get('/me/progress');
       const data = response.data;
       console.log("Progress data received:", data);
       setUnlocked(data.unlockedLevels || [0]);
@@ -145,7 +145,7 @@ export function useDashboardData({ currentLesson }: UseDashboardDataOptions): Us
 
   const saveFirstLessonView = useCallback(async () => {
     try {
-      await api.post('/save_first_lesson_view');
+      await api.put('/me/onboarding', { hasViewedFirstLesson: true });
       console.log("First lesson view saved successfully");
     } catch (error) {
       console.error('Failed to save first lesson view:', error);

@@ -4,25 +4,24 @@ import ContentManager from './ContentManager';
 import api, { BACKEND_URL } from '@/api';
 
 interface UserItem {
-  user_id: string;
+  userId: string;
   name: string;
-  auth_methods: string[];
-  is_admin: boolean;
-  profile_complete: boolean;
+  authMethods: string[];
+  isAdmin: boolean;
+  profileComplete: boolean;
   disabled: boolean;
   createdAt: string | null;
   lastLoginAt: string | null;
 }
 
 interface FeedbackItem {
-  _id: string;
-  user_id: string;
+  id: string;
+  userId: string;
   category: string;
   feedback: string;
   status: string;
-  created_at: string;
-  screenshot_id?: string;
-  has_screenshot: boolean;
+  createdAt: string;
+  hasScreenshot: boolean;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -81,9 +80,9 @@ const AdminDashboard: React.FC = () => {
       const response = await api.get(`/admin/users?${params.toString()}`);
       const data = response.data;
       setUsersList(prev => append ? [...prev, ...data.users] : data.users);
-      setUsersTotalCount(data.total_count);
-      setUsersTotalAll(data.total_users);
-      setUsersHasMore(data.has_more);
+      setUsersTotalCount(data.totalCount);
+      setUsersTotalAll(data.totalUsers);
+      setUsersHasMore(data.hasMore);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -95,11 +94,11 @@ const AdminDashboard: React.FC = () => {
     if (activeTab === 'users') void fetchUsers();
   }, [activeTab, fetchUsers]);
 
-  const handleToggleDisable = async (email: string) => {
+  const handleToggleDisable = async (email: string, disabled: boolean) => {
     try {
-      const response = await api.patch(`/admin/users/${encodeURIComponent(email)}/disable`, {});
+      const response = await api.patch(`/admin/users/${encodeURIComponent(email)}`, { disabled });
       setUsersList(prev =>
-        prev.map(u => u.user_id === email ? { ...u, disabled: response.data.disabled } : u)
+        prev.map(u => u.userId === email ? { ...u, disabled: response.data.disabled } : u)
       );
     } catch (error) {
       console.error('Error toggling user disable:', error);
@@ -115,8 +114,8 @@ const AdminDashboard: React.FC = () => {
       const response = await api.get(`/admin/feedback?${params.toString()}`);
       const data = response.data;
       setFeedbackList(prev => append ? [...prev, ...data.feedback] : data.feedback);
-      setFeedbackTotal(data.total_count);
-      setFeedbackHasMore(data.has_more);
+      setFeedbackTotal(data.totalCount);
+      setFeedbackHasMore(data.hasMore);
     } catch (error) {
       console.error('Error fetching feedback:', error);
     } finally {
@@ -131,9 +130,9 @@ const AdminDashboard: React.FC = () => {
   const handleStatusToggle = async (id: string, currentStatus: string) => {
     const newStatus = STATUS_CYCLE[currentStatus] || 'open';
     try {
-      await api.patch(`/admin/feedback/${id}/status`, { status: newStatus });
+      await api.patch(`/admin/feedback/${id}`, { status: newStatus });
       setFeedbackList(prev =>
-        prev.map(fb => fb._id === id ? { ...fb, status: newStatus } : fb)
+        prev.map(fb => fb.id === id ? { ...fb, status: newStatus } : fb)
       );
     } catch (error) {
       console.error('Error updating status:', error);
@@ -144,7 +143,7 @@ const AdminDashboard: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this feedback?')) return;
     try {
       await api.delete(`/admin/feedback/${id}`);
-      setFeedbackList(prev => prev.filter(fb => fb._id !== id));
+      setFeedbackList(prev => prev.filter(fb => fb.id !== id));
       setFeedbackTotal(prev => prev - 1);
     } catch (error) {
       console.error('Error deleting feedback:', error);
@@ -243,19 +242,19 @@ const AdminDashboard: React.FC = () => {
               </thead>
               <tbody>
                 {usersList.map((user) => (
-                  <tr key={user.user_id} className="border-b border-[#1e2d4a]">
+                  <tr key={user.userId} className="border-b border-[#1e2d4a]">
                     <td className={`
                       ${tdCls}
                       max-w-55 truncate
                     `}>
-                      {user.user_id}
+                      {user.userId}
                     </td>
                     <td className={tdCls}>{user.name || '—'}</td>
                     <td className={`
                       ${tdCls}
                       flex flex-wrap gap-1
                     `}>
-                      {user.auth_methods.map((method) => (
+                      {user.authMethods.map((method) => (
                         <span
                           key={method}
                           className={badgeCls}
@@ -267,18 +266,18 @@ const AdminDashboard: React.FC = () => {
                           {method === 'google' ? 'Google' : 'Email'}
                         </span>
                       ))}
-                      {user.auth_methods.length === 0 && <span className="
+                      {user.authMethods.length === 0 && <span className="
                         text-[#6B7280]
                       ">—</span>}
                     </td>
                     <td className={tdCls}>
-                      {user.profile_complete
+                      {user.profileComplete
                         ? <span className="text-success">Complete</span>
                         : <span className="text-[#6B7280]">Incomplete</span>
                       }
                     </td>
                     <td className={tdCls}>
-                      {user.is_admin
+                      {user.isAdmin
                         ? <span className="font-semibold text-[#facc15]">Admin</span>
                         : <span className="text-[#6B7280]">User</span>
                       }
@@ -287,7 +286,7 @@ const AdminDashboard: React.FC = () => {
                     <td className={tdCls}>{user.lastLoginAt ? formatDate(user.lastLoginAt) : '—'}</td>
                     <td className={tdCls}>
                       <button
-                        onClick={() => { void handleToggleDisable(user.user_id); }}
+                        onClick={() => { void handleToggleDisable(user.userId, !user.disabled); }}
                         className={badgeCls}
                         style={{
                           backgroundColor: user.disabled ? '#5f1e1e' : '#1a3b2a',
@@ -365,7 +364,7 @@ const AdminDashboard: React.FC = () => {
               </thead>
               <tbody>
                 {feedbackList.map((fb) => {
-                  const isExpanded = expandedIds.has(fb._id);
+                  const isExpanded = expandedIds.has(fb.id);
                   const needsTruncate = fb.feedback.length > 80;
                   const displayText = (!needsTruncate || isExpanded)
                     ? fb.feedback
@@ -373,15 +372,15 @@ const AdminDashboard: React.FC = () => {
                   const statusColor = STATUS_COLORS[fb.status];
 
                   return (
-                    <tr key={fb._id} className="border-b border-[#1e2d4a]">
-                      <td className={tdCls}>{formatDate(fb.created_at)}</td>
-                      <td className={tdCls}>{fb.user_id === 'anonymous' ? 'Anonymous' : fb.user_id}</td>
+                    <tr key={fb.id} className="border-b border-[#1e2d4a]">
+                      <td className={tdCls}>{formatDate(fb.createdAt)}</td>
+                      <td className={tdCls}>{fb.userId === 'anonymous' ? 'Anonymous' : fb.userId}</td>
                       <td className={tdCls}>{fb.category}</td>
                       <td className={tdCls}>
                         {displayText}
                         {needsTruncate && (
                           <button
-                            onClick={() => toggleExpand(fb._id)}
+                            onClick={() => toggleExpand(fb.id)}
                             className="
                               ml-1.5 cursor-pointer border-none bg-transparent
                               p-0 font-inter text-[13px] text-[#60a5fa]
@@ -393,7 +392,7 @@ const AdminDashboard: React.FC = () => {
                       </td>
                       <td className={tdCls}>
                         <button
-                          onClick={() => { void handleStatusToggle(fb._id, fb.status); }}
+                          onClick={() => { void handleStatusToggle(fb.id, fb.status); }}
                           className={badgeCls}
                           style={{ backgroundColor: statusColor.bg, color: statusColor.text }}
                           title="Click to cycle status"
@@ -402,9 +401,9 @@ const AdminDashboard: React.FC = () => {
                         </button>
                       </td>
                       <td className={tdCls}>
-                        {fb.has_screenshot ? (
+                        {fb.hasScreenshot ? (
                           <a
-                            href={`${BACKEND_URL}/feedback_file/${fb.screenshot_id}`}
+                            href={`${BACKEND_URL}/api/admin/feedback/${fb.id}/screenshot`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="
@@ -420,7 +419,7 @@ const AdminDashboard: React.FC = () => {
                       </td>
                       <td className={tdCls}>
                         <button
-                          onClick={() => { void handleDeleteFeedback(fb._id); }}
+                          onClick={() => { void handleDeleteFeedback(fb.id); }}
                           className="
                             cursor-pointer rounded-md border-none bg-[#5f1e1e]
                             px-2.5 py-1 font-inter text-xs font-semibold

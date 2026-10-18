@@ -107,8 +107,8 @@ const ContentManager: React.FC = () => {
       setMessage('Dashboard config saved');
     } catch (err: unknown) {
       let msg = 'Failed to save';
-      if (axios.isAxiosError<{ error?: string }>(err) && err.response?.data.error) {
-        msg = err.response.data.error;
+      if (axios.isAxiosError<{ detail?: unknown }>(err) && typeof err.response?.data.detail === 'string') {
+        msg = err.response.data.detail;
       }
       setMessage(`Error: ${msg}`);
     } finally {

@@ -7,7 +7,7 @@ import api, { BACKEND_URL } from '@/api';
 import type { ContentBlock } from '@/types/lesson';
 
 interface ApiLesson {
-  _id: string;
+  id: string;
   courseId: number;
   title: string;
   blocks: ContentBlock[];
@@ -55,7 +55,7 @@ const ImageBlock: React.FC<{ block: ContentBlock }> = ({ block }) => {
   return (
     <figure role="figure" aria-label={block.alt || block.caption || 'Lesson image'} style={figureStyle}>
       <img
-        src={`${BACKEND_URL}/file/${block.fileId}`}
+        src={`${BACKEND_URL}/api/files/${block.fileId}`}
         alt=""
         aria-hidden="true"
         style={imgStyle}

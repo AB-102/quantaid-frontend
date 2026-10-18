@@ -8,7 +8,7 @@ const MAX_STORED_MESSAGES = 50;
 const STORAGE_PREFIX = 'quantaid:chat:';
 
 export interface ChatMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant';
   content: string;
   type?: 'explanation' | 'analogy' | 'general';
 }
@@ -228,7 +228,7 @@ const GlobalChat: React.FC<Props> = ({
     setIsLoading(true);
     try {
       const res = await api.post(
-        `/explain_text`,
+        `/ai/explanations`,
         { text },
       );
       const explanation = res.data.explanation;
@@ -248,7 +248,7 @@ const GlobalChat: React.FC<Props> = ({
     setIsLoading(true);
     try {
       const res = await api.post(
-        `/generate_analogy`,
+        `/ai/analogies`,
         { text },
       );
       const analogy = res.data.analogy;
@@ -270,7 +270,7 @@ const GlobalChat: React.FC<Props> = ({
     setIsLoading(true);
     try {
       const res = await api.post(
-        `/generate_analogy`,
+        `/ai/analogies`,
         { text: lastTopic },
       );
       const analogy = res.data.analogy;
@@ -294,10 +294,10 @@ const GlobalChat: React.FC<Props> = ({
     setIsLoading(true);
     try {
       const res = await api.post(
-        `/chat_about_text`,
-        { highlighted_text: lastTopic ?? '', messages: messages.concat(newUserMessage) },
+        `/ai/chat`,
+        { highlightedText: lastTopic ?? '', messages: messages.concat(newUserMessage) },
       );
-      const reply = res.data.assistant_reply;
+      const reply = res.data.assistantReply;
       append({ role: 'assistant', content: reply, type: 'general' });
       setLastTopic(null);
     } catch (err) {
