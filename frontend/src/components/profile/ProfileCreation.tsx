@@ -4,8 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/api';
 import welcomeVideo from '@/assets/welcome.mp4';
-import { stepConfigs } from './profileStepConfigs';
-import type { FormData, FormHandlers, CommonProps } from './profileStepConfigs';
+import { stepConfigs, type FormData, type FormHandlers, type CommonProps } from './profileStepConfigs';
 import DefaultStep from './DefaultStep';
 
 const ProfileCreation: React.FC = () => {
@@ -151,14 +150,14 @@ const ProfileCreation: React.FC = () => {
           autoPlay
           playsInline
           controls
-          onEnded={() => navigate('/map')}
+          onEnded={() => { void navigate('/map'); }}
           className="rounded-lg"
         >
           <source src={welcomeVideo} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <button
-          onClick={() => navigate('/map')}
+          onClick={() => { void navigate('/map'); }}
           className="
             skip-button mt-5 min-w-30 cursor-pointer rounded-xl border-none
             bg-[#3D4C65] px-6 py-3 font-inter text-base font-medium text-white

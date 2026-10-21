@@ -37,7 +37,7 @@ src/
   components/
     common/         Shared UI (Reading, QuizProgressBar, FeedbackModal)
     layout/         Sidebar, DashboardHeader
-    auth/           Login (Google sign-in)
+    auth/           Login (Google or Rice sign-in)
     dashboard/      Dashboard, CourseCard, CourseDetailView, LessonView
     quiz/           Quiz, Questions, QuizFooter, QuizResultsScreen, settings dropdown
     profile/        Profile modal, ProfileCreation wizard, DefaultStep, step configs

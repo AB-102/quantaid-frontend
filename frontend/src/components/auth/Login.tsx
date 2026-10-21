@@ -1,14 +1,67 @@
 // src/components/Login.tsx
 
 import { useAuth } from '@/AuthContext';
-import api from '@/api';
+import api, { BACKEND_URL } from '@/api';
 import GoogleIcon from '@/assets/google-icon.svg';
 import LoginGraphic from '@/assets/login-graphic.svg';
 import QuantaidLogo from '@/assets/quantaid-logo.svg';
-import { useGoogleLogin } from '@react-oauth/google';
-import { useRef, useState } from 'react';
+import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
+import { useEffect, useState, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// GET /api/auth/config: a Rice deployment signs in with Rice SSO only, any other deployment with Google
+type AuthConfig =
+  | { isRiceDeployment: false; googleClientId: string }
+  | { isRiceDeployment: true; googleClientId: null };
+
+const signInButtonClass = `
+  relative mx-auto flex h-12 w-100 max-w-100 min-w-min
+  cursor-pointer appearance-none items-center justify-center
+  overflow-hidden rounded-sm border-none bg-[#F2F2F2] px-3
+  text-center align-middle font-roboto text-base font-medium
+  tracking-[0.25px] whitespace-nowrap text-[#1F1F1F]
+  transition-[background-color,border-color,box-shadow]
+  duration-218 outline-none select-none
+`;
+
+const hoverOn = (e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.backgroundColor = '#DFE1E3'; };
+const hoverOff = (e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.backgroundColor = '#F2F2F2'; };
+
+// useGoogleLogin needs the GoogleOAuthProvider above it, so the Google button is its own component
+const GoogleSignInButton = ({ label, onAccessToken }: { label: string; onAccessToken: (accessToken: string) => void }) => {
+  const login = useGoogleLogin({
+    onSuccess: (tokenResponse) => { onAccessToken(tokenResponse.access_token); },
+    onError: (errorResponse) => { console.error('Login Failed:', errorResponse); },
+  });
+
+  return (
+    <button
+      type="button"
+      className={signInButtonClass}
+      onClick={() => login()}
+      onMouseEnter={hoverOn}
+      onMouseLeave={hoverOff}
+      aria-label={label}
+    >
+      <img src={GoogleIcon} alt="" className="mr-[0.7rem] h-6.5" aria-hidden="true" />
+      <span>{label}</span>
+    </button>
+  );
+};
+
+// Rice SSO is a full-page redirect through the backend (OIDC authorization code flow, GitHub #17).
+// Until that's built, the backend answers with a "not yet configured" error.
+const RiceSignInButton = () => (
+  <button
+    type="button"
+    className={signInButtonClass}
+    onClick={() => { window.location.assign(`${BACKEND_URL}/api/auth/rice/login`); }}
+    onMouseEnter={hoverOn}
+    onMouseLeave={hoverOff}
+  >
+    I'm a Rice Student
+  </button>
+);
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,42 +70,39 @@ const Login = () => {
   // new users start in sign-up mode, returning users start in login mode
   const [isSignUpMode, setIsSignUpMode] = useState(() => localStorage.getItem('loggedInUserEmail') === null);
   const [isLoading, setIsLoading] = useState(false);
-  const googleButtonRef = useRef<HTMLButtonElement>(null);
+  const [authConfig, setAuthConfig] = useState<AuthConfig | null>(null);
+  const [authConfigFailed, setAuthConfigFailed] = useState(false);
+
+  useEffect(() => {
+    api.get<AuthConfig>('/auth/config')
+      .then(res => { setAuthConfig(res.data); })
+      .catch(() => { setAuthConfigFailed(true); });
+  }, []);
 
   const toggleMode = () => setIsSignUpMode(prev => !prev);
 
-  const login = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      void (async () => {
-        setIsLoading(true);
-        try {
-          const backendResponse = await api.post(
-            '/auth/google',
-            { accessToken: tokenResponse.access_token },
-          );
-          const { redirectTo, isAdmin, email: userEmail } = backendResponse.data;
-          localStorage.setItem('loggedInUserEmail', userEmail ?? '');
+  const signInWithGoogle = async (accessToken: string) => {
+    setIsLoading(true);
+    try {
+      const backendResponse = await api.post('/auth/google', { accessToken });
+      const { redirectTo, isAdmin, email: userEmail } = backendResponse.data;
+      localStorage.setItem('loggedInUserEmail', userEmail ?? '');
 
-          authLogin(userEmail, isAdmin);
+      authLogin(userEmail, isAdmin);
 
-          if (isAdmin) {
-            navigate('/admin-dashboard');
-          } else if (redirectTo === 'map') {
-            navigate('/map');
-          } else {
-            navigate('/profile-creation');
-          }
-        } catch (err) {
-          console.error('Error during login:', err);
-        } finally {
-          setIsLoading(false);
-        }
-      })();
-    },
-    onError: (errorResponse) => {
-      console.error('Login Failed:', errorResponse);
-    },
-  });
+      if (isAdmin) {
+        void navigate('/admin-dashboard');
+      } else if (redirectTo === 'map') {
+        void navigate('/map');
+      } else {
+        void navigate('/profile-creation');
+      }
+    } catch (err) {
+      console.error('Error during login:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
@@ -112,31 +162,27 @@ const Login = () => {
               </h1>
             )}
 
-            <button
-              ref={googleButtonRef}
-              type="button"
-              className="
-                relative mx-auto flex h-12 w-100 max-w-100 min-w-min
-                cursor-pointer appearance-none items-center justify-center
-                overflow-hidden rounded-sm border-none bg-[#F2F2F2] px-3
-                text-center align-middle font-roboto text-base font-medium
-                tracking-[0.25px] whitespace-nowrap text-[#1F1F1F]
-                transition-[background-color,border-color,box-shadow]
-                duration-218 outline-none select-none
-              "
-              onClick={() => login()}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#DFE1E3'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#F2F2F2'; }}
-              aria-label={isSignUpMode ? 'Sign up with Google' : 'Continue with Google'}
-            >
-              <img src={GoogleIcon} alt="" className="mr-[0.7rem] h-6.5" aria-hidden="true" />
-              <span>{isSignUpMode ? 'Sign up with Google' : 'Continue with Google'}</span>
-            </button>
+            {authConfigFailed && (
+              <p className="text-center text-base text-[#F1E0E0]">
+                Sign-in is unavailable right now. Please try again later.
+              </p>
+            )}
+
+            {authConfig !== null && (authConfig.isRiceDeployment ? (
+              <RiceSignInButton />
+            ) : (
+              <GoogleOAuthProvider clientId={authConfig.googleClientId}>
+                <GoogleSignInButton
+                  label={isSignUpMode ? 'Sign up with Google' : 'Continue with Google'}
+                  onAccessToken={(accessToken) => { void signInWithGoogle(accessToken); }}
+                />
+              </GoogleOAuthProvider>
+            ))}
 
             {/* Terms / privacy — sign-up mode only */}
             {isSignUpMode && (
               <p className="mt-6 text-left text-sm leading-[1.4] text-[#B4B6BE]">
-                By clicking Sign up with Google, you acknowledge that you have read and agree to Quantaid's{' '}
+                By signing up, you acknowledge that you have read and agree to Quantaid's{' '}
                 <a
                   href="/terms"
                   target="_blank"

@@ -214,7 +214,7 @@ const Dashboard: React.FC = () => {
   const handleSignOutClick = async () => {
     setShowProfileDropdown(false);
     await authLogout();
-    navigate('/');
+    void navigate('/');
   };
 
   const handleLeaveFeedbackClick = () => {
@@ -341,7 +341,7 @@ const Dashboard: React.FC = () => {
     <div
       className={`
         flex h-screen overflow-clip bg-brand-bg
-        font-inter${layout.effectiveDuration === 0 ? ' no-transition' : ''}
+        font-inter ${layout.effectiveDuration === 0 ? 'no-transition' : ''}
       `}
     >
 

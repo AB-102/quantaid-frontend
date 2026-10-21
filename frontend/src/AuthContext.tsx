@@ -142,7 +142,7 @@ export const AdminToggle: React.FC = () => {
 
   return (
     <button
-      onClick={() => navigate(target)}
+      onClick={() => { void navigate(target); }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{

@@ -2,17 +2,14 @@ import React from 'react'
 import { render, RenderOptions } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { AuthProvider } from '@/AuthContext'
-import { GoogleOAuthProvider } from '@react-oauth/google'
 
 function AllProviders({ children }: { children: React.ReactNode }) {
   return (
-    <GoogleOAuthProvider clientId="test-client-id">
-      <AuthProvider>
-        <MemoryRouter>
-          {children}
-        </MemoryRouter>
-      </AuthProvider>
-    </GoogleOAuthProvider>
+    <AuthProvider>
+      <MemoryRouter>
+        {children}
+      </MemoryRouter>
+    </AuthProvider>
   )
 }
 

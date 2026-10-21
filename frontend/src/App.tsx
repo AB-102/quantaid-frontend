@@ -50,8 +50,8 @@ const QuizPage: React.FC = () => {
     <Quiz
       courseId={id}
       questions={questions}
-      onComplete={() => { navigate('/map'); }}
-      onExit={() => { navigate('/map'); }}
+      onComplete={() => { void navigate('/map'); }}
+      onExit={() => { void navigate('/map'); }}
     />
   );
 };

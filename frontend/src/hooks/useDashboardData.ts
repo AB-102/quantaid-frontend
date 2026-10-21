@@ -92,7 +92,7 @@ export function useDashboardData({ currentLesson }: UseDashboardDataOptions): Us
           });
         }
       })
-      .catch((err) => { setContentError(err); });
+      .catch((err: unknown) => { setContentError(err); });
     return () => { cancelled = true; };
   }, [currentLesson]);
 
@@ -112,7 +112,7 @@ export function useDashboardData({ currentLesson }: UseDashboardDataOptions): Us
         }));
         setDashboardConfig({ sections: data.sections || [], courses: mappedCourses });
       })
-      .catch((err) => { setContentError(err); });
+      .catch((err: unknown) => { setContentError(err); });
     return () => { cancelled = true; };
   }, []);
 
