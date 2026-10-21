@@ -24,6 +24,9 @@ const signInButtonClass = `
   duration-218 outline-none select-none
 `;
 
+// Staging backends run on Render's free tier, which sleeps after 15 idle minutes and takes ~50s to wake
+const isRenderBackend = BACKEND_URL.includes('.onrender.com');
+
 const hoverOn = (e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.backgroundColor = '#DFE1E3'; };
 const hoverOff = (e: MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.backgroundColor = '#F2F2F2'; };
 
@@ -63,6 +66,27 @@ const RiceSignInButton = () => (
   </button>
 );
 
+// Holds the sign-in button's place while GET /api/auth/config loads, so the page doesn't shift when the real button arrives
+const SignInButtonPlaceholder = () => (
+  <button
+    type="button"
+    disabled
+    className={`
+      ${signInButtonClass}
+      disabled:cursor-default disabled:opacity-60
+    `}
+  >
+    <span
+      className="
+        mr-[0.7rem] size-5 animate-spin rounded-full border-2 border-[#C7C7C7]
+        border-t-[#1F1F1F]
+      "
+      aria-hidden="true"
+    />
+    <span>Loading sign-in…</span>
+  </button>
+);
+
 const Login = () => {
   const navigate = useNavigate();
   const { login: authLogin } = useAuth();
@@ -78,6 +102,15 @@ const Login = () => {
       .then(res => { setAuthConfig(res.data); })
       .catch(() => { setAuthConfigFailed(true); });
   }, []);
+
+  // waiting a few seconds before explaining the delay keeps the note from flashing when the backend is awake
+  const [isSlowToLoad, setIsSlowToLoad] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => { setIsSlowToLoad(true); }, 3000);
+    return () => { clearTimeout(timer); };
+  }, []);
+
+  const isConfigLoading = authConfig === null && !authConfigFailed;
 
   const toggleMode = () => setIsSignUpMode(prev => !prev);
 
@@ -168,6 +201,8 @@ const Login = () => {
               </p>
             )}
 
+            {isConfigLoading && <SignInButtonPlaceholder />}
+
             {authConfig !== null && (authConfig.isRiceDeployment ? (
               <RiceSignInButton />
             ) : (
@@ -246,6 +281,17 @@ const Login = () => {
               )}
             </p>
           </div>
+
+          {/* Cold-start note — pinned to the bottom so it never shifts the form */}
+          {isConfigLoading && isSlowToLoad && isRenderBackend && (
+            <p className="
+              absolute inset-x-16 bottom-8 text-center text-sm leading-[1.4]
+              text-[#B4B6BE]
+            ">
+              This staging site's backend is hosted on Render, which sleeps when idle and can take 50+ seconds
+              to wake up. Sign-in will appear as soon as it's ready.
+            </p>
+          )}
         </main>
 
         {/* RIGHT COLUMN — hidden below md breakpoint */}

@@ -20,5 +20,5 @@ export function renderWithProviders(
   return render(ui, { wrapper: AllProviders, ...options })
 }
 
-export { render, screen, waitFor, within } from '@testing-library/react'
+export { act, render, screen, waitFor, within } from '@testing-library/react'
 export { default as userEvent } from '@testing-library/user-event'
