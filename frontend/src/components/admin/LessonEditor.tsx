@@ -315,7 +315,7 @@ const LessonEditor: React.FC<LessonEditorProps> = ({ initialCourseId, onBack }) 
 
   return (
     <div>
-      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { void onFileSelected(e); }} />
+      <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp" className="hidden" onChange={(e) => { void onFileSelected(e); }} />
 
       {/* Top action bar */}
       <div className="mb-3 flex flex-wrap items-center gap-2">

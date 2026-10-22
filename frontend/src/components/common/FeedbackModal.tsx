@@ -260,7 +260,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/gif,image/webp"
                 onChange={handleFileChange}
                 className="hidden"
               />

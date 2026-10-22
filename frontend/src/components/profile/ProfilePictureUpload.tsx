@@ -34,7 +34,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
         Change Photo
         <input
           type="file"
-          accept="image/*"
+          accept="image/png,image/jpeg,image/gif,image/webp"
           onChange={onPictureChange}
           className="hidden"
         />
