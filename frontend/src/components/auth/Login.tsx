@@ -87,6 +87,108 @@ const SignInButtonPlaceholder = () => (
   </button>
 );
 
+// TODO: replace in the SSO-only redesign. Login went SSO-only for dual deployment (Rice/Google SSO) and
+// security, so the email/password flow was removed in frontend f2e66ed and backend b08df52. This is a
+// disabled, look-only copy of that form, kept so the page doesn't look half-empty until then.
+const inputContainerClass = 'mb-6 text-left';
+const labelClass = 'mb-[0.3rem] block text-[1.3rem] text-[#F1E0E0]';
+const inputClass = `
+  w-full cursor-not-allowed rounded-sm bg-[#748ECB] p-4 font-inter
+  text-[1.2rem] leading-[1.2] tracking-[-0.01em] text-[#1F1A2A]
+  placeholder:text-[#1F1A2A]/60
+`;
+
+const EmailPasswordPlaceholder = ({ isSignUpMode }: { isSignUpMode: boolean }) => (
+  <fieldset disabled>
+    <div className="my-[3.4rem] flex w-full items-center">
+      <div className="-mx-4 mt-[0.03rem] h-px flex-1 bg-[#ccc]" />
+      <span className="
+        relative z-1 mx-4 bg-brand-medium px-2 text-[.7rem] whitespace-nowrap
+        text-brand-subtle
+      ">OR</span>
+      <div className="-mx-4 mt-[0.03rem] h-px flex-1 bg-[#ccc]" />
+    </div>
+
+    <div className={inputContainerClass}>
+      <label htmlFor="email-input" className={labelClass}>Email</label>
+      <input id="email-input" type="email" placeholder="Name@gmail.com" className={inputClass} />
+    </div>
+
+    {isSignUpMode && (
+      <div className={inputContainerClass}>
+        <label htmlFor="name-input" className={labelClass}>Name</label>
+        <p className="
+          mt-[-0.4rem] mb-[0.4rem] text-left text-[0.85rem] leading-[1.4]
+          text-[#F1E0E0]
+        ">
+          This name will appear on your profile
+        </p>
+        <input id="name-input" type="text" placeholder="John/Jane Doe" className={inputClass} />
+      </div>
+    )}
+
+    <div className={inputContainerClass}>
+      <label htmlFor="password-input" className={labelClass}>Password</label>
+      <input id="password-input" type="password" placeholder="********" className={inputClass} />
+    </div>
+
+    {/* Terms / privacy — sign-up mode only */}
+    {isSignUpMode && (
+      <p className="mb-3.5 text-left text-sm leading-[1.4] text-[#B4B6BE]">
+        By signing up, you acknowledge that you have read and agree to Quantaid's{' '}
+        <a
+          href="/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="
+            font-normal text-brand-focus no-underline
+            hover:underline
+          "
+        >
+          Terms of Use
+        </a>{' '}
+        and{' '}
+        <a
+          href="/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="
+            font-normal text-brand-focus no-underline
+            hover:underline
+          "
+        >
+          Privacy Policy
+        </a>.
+      </p>
+    )}
+
+    {!isSignUpMode && (
+      <div className="mb-2 text-left">
+        <button
+          type="button"
+          className="
+            cursor-not-allowed p-0 font-inter text-[0.9rem] font-normal
+            text-brand-focus underline
+          "
+        >
+          Forgot my password
+        </button>
+      </div>
+    )}
+
+    <button
+      type="button"
+      className="
+        my-8 w-full cursor-not-allowed rounded-full bg-brand-blue-mid p-[1.2rem]
+        font-inter text-[1.3rem] leading-[1.2] font-medium tracking-[-0.01em]
+        text-white
+      "
+    >
+      {isSignUpMode ? 'SIGN UP' : 'LOG IN'}
+    </button>
+  </fieldset>
+);
+
 const Login = () => {
   const navigate = useNavigate();
   const { login: authLogin } = useAuth();
@@ -214,35 +316,7 @@ const Login = () => {
               </GoogleOAuthProvider>
             ))}
 
-            {/* Terms / privacy — sign-up mode only */}
-            {isSignUpMode && (
-              <p className="mt-6 text-left text-sm leading-[1.4] text-[#B4B6BE]">
-                By signing up, you acknowledge that you have read and agree to Quantaid's{' '}
-                <a
-                  href="/terms"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="
-                    font-normal text-brand-focus no-underline
-                    hover:underline
-                  "
-                >
-                  Terms of Use
-                </a>{' '}
-                and{' '}
-                <a
-                  href="/terms"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="
-                    font-normal text-brand-focus no-underline
-                    hover:underline
-                  "
-                >
-                  Privacy Policy
-                </a>.
-              </p>
-            )}
+            <EmailPasswordPlaceholder isSignUpMode={isSignUpMode} />
 
             {/* Toggle between sign-up and login */}
             <p className="mt-0 text-center text-base font-normal text-[#C1C5D6]">

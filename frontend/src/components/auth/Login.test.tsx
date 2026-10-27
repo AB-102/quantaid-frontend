@@ -45,6 +45,16 @@ describe('Login', () => {
     expect(screen.getByRole('button', { name: /loading sign-in/i })).toBeDisabled()
   })
 
+  it('shows the removed email/password form as a disabled placeholder', () => {
+    mockBackendAsleep()
+    renderWithProviders(<Login />)
+    expect(screen.getByLabelText('Email')).toBeDisabled()
+    expect(screen.getByLabelText('Name')).toBeDisabled()
+    expect(screen.getByLabelText('Password')).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'SIGN UP' })).toBeDisabled()
+    expect(screen.getByRole('link', { name: 'Terms of Use' })).toHaveAttribute('href', '/terms')
+  })
+
   it('explains the Render cold start when the sign-in config is slow to load', () => {
     vi.useFakeTimers()
     mockBackendAsleep()
