@@ -15,8 +15,9 @@ import RevisionHistory from './RevisionHistory';
 import RowMenu from './RowMenu';
 import { hintCls, inputCls, labelCls, secondaryBtnCls, toolBtnCls } from './styles';
 
-// Created once: a new array each render would reconfigure the editor
-const EXTENSIONS = [markdown(), EditorView.lineWrapping];
+// Created once: a new array each render would reconfigure the editor. Like the app's other text fields, the editor
+// shows focus with its caret, not CodeMirror's dotted outline.
+const EXTENSIONS = [markdown(), EditorView.lineWrapping, EditorView.theme({ '&.cm-focused': { outline: 'none' } })];
 
 const QUESTION_TEMPLATE = '### Question text?\n- [ ] A wrong answer\n- [x] The correct answer\n> Why the correct answer is right';
 

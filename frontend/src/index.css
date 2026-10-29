@@ -120,11 +120,18 @@ body {
 /* ── Focus rings (consolidated) ─────────────────────────────────── */
 button:focus-visible,
 [role="button"]:focus-visible,
-/* The header search shows focus by lightening its box instead (.search-container:focus-within) */
-input:not(.search-input):focus-visible,
+input:is([type="checkbox"], [type="radio"]):focus-visible,
 .quiz-option:focus-visible {
   outline: 3px solid #A4C5FF !important;
   outline-offset: 2px !important;
+}
+
+/* Text fields get no ring: they show focus with their caret, and with their own border or background where they
+   have one (the header search lightens its box with .search-container:focus-within). The lesson editor's
+   CodeMirror outline is turned off in LessonEditor.tsx. */
+input:not([type="checkbox"], [type="radio"]):focus,
+textarea:focus {
+  outline: none;
 }
 
 /* Login toggle button: smaller focus ring */
