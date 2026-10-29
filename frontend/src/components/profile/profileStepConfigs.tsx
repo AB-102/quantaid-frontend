@@ -103,6 +103,10 @@ export const stepConfigs: StepConfig[] = [
                         w-full border-0 border-b-2 border-brand-border
                         bg-transparent px-0 py-2 font-inter text-base text-white
                         transition-all duration-200 outline-none
+                        placeholder:text-[#666] placeholder:italic
+                        hover:border-b-brand-sky
+                        focus:border-b-brand-sky focus:bg-[rgba(37,52,98,0.15)]
+                        focus:px-1
                       "
                       autoFocus
                     />
@@ -309,6 +313,10 @@ export const stepConfigs: StepConfig[] = [
                         w-full border-0 border-b-2 border-brand-border
                         bg-transparent px-0 py-2 font-inter text-base text-white
                         transition-all duration-200 outline-none
+                        placeholder:text-[#666] placeholder:italic
+                        hover:border-b-brand-sky
+                        focus:border-b-brand-sky focus:bg-[rgba(37,52,98,0.15)]
+                        focus:px-1
                       "
                       autoFocus
                     />
@@ -370,6 +378,10 @@ export const stepConfigs: StepConfig[] = [
                         w-full border-0 border-b-2 border-brand-border
                         bg-transparent px-0 py-2 font-inter text-base text-white
                         transition-all duration-200 outline-none
+                        placeholder:text-[#666] placeholder:italic
+                        hover:border-b-brand-sky
+                        focus:border-b-brand-sky focus:bg-[rgba(37,52,98,0.15)]
+                        focus:px-1
                       "
                       autoFocus
                     />
@@ -493,6 +505,9 @@ export const stepConfigs: StepConfig[] = [
               w-full rounded-lg border-2 border-brand-border bg-transparent px-0
               py-3.5 text-center font-inter text-base text-white transition-all
               duration-200 outline-none
+              placeholder:text-[#666] placeholder:italic
+              hover:border-b-brand-sky
+              focus:border-b-brand-sky focus:bg-[rgba(37,52,98,0.15)] focus:px-1
             "
           />
         </div>

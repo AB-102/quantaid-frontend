@@ -19,9 +19,9 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isUnlocked, progress, o
       tabIndex={isUnlocked ? 0 : -1}
       className={`
         relative flex h-90 w-full max-w-75 min-w-75 shrink-0 flex-col
-        overflow-hidden rounded-[10px] border border-brand-border bg-brand-card
-        transition-shadow duration-200 will-change-transform backface-hidden
-        transform-3d
+        overflow-hidden rounded-[10px] border border-brand-border-light
+        bg-transparent transition-shadow duration-200 will-change-transform
+        backface-hidden transform-3d
         ${isUnlocked ? `cursor-pointer` : `cursor-not-allowed opacity-50`}
       `}
       onClick={() => isUnlocked && onSelect(course.id)}

@@ -66,10 +66,10 @@ const CourseDetailView: React.FC<CourseDetailViewProps> = ({
                 return (
                   <button
                     className="
-                      topic-button mb-2.5 flex w-full items-center
-                      justify-between rounded-lg border-2 border-brand-border
-                      bg-transparent px-5 py-4 font-inter transition-all
-                      duration-200
+                      topic-button mb-2.5 flex w-full cursor-pointer
+                      items-center justify-between rounded-lg border-2
+                      border-brand-border-light bg-transparent px-5 py-4
+                      font-inter transition-all duration-200
                     "
                     key={topic.id}
                     style={!isUnlocked ? { cursor: 'not-allowed', opacity: 0.6 } : undefined}

@@ -26,7 +26,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       style={headerStyle}
       className="
         main-panel-coordinated fixed inset-x-0 top-0 z-99 flex items-center
-        justify-between border-b border-brand-border bg-brand-bg px-16
+        justify-between border-b border-brand-border-light bg-brand-bg px-16
         py-[0.9rem] text-white
       "
       role="banner"
@@ -61,6 +61,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               cursor-pointer items-center justify-center gap-1.5 rounded-lg
               border-transparent bg-brand-search px-3.5 py-1.5 font-inter
               text-base font-medium text-brand-gray transition-all duration-200
+              hover:bg-[#0B2F54]
             "
             onClick={onChatToggle}
             aria-label="Toggle Chat"

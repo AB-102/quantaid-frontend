@@ -12,7 +12,6 @@ import { TfiBookmarkAlt } from "react-icons/tfi";
 interface SidebarProps {
   currentView: 'dashboard' | 'course-detail' | 'lesson';
   isCollapsed: boolean;
-  onToggleCollapse: () => void;
   onNavigateToDashboard: () => void;
   onCollapsedProfileClick: () => void;
   showProfileDropdown: boolean;
@@ -93,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     <aside
       className="
         sidebar-coordinated fixed z-100 flex h-screen shrink-0 flex-col
-        justify-between overflow-clip border-r border-brand-border
+        justify-between overflow-clip border-r border-brand-border-light
         bg-transparent py-5
       "
       style={{ width: currentWidth, transition: `width ${dur} ${ease}` }}
@@ -121,9 +120,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             }}
           />
           <div
-            className="
-              bg-left-center block shrink-0 bg-size-[auto_100%] bg-no-repeat
-            "
+            className="block shrink-0 bg-size-[auto_100%] bg-left bg-no-repeat"
             style={{
               backgroundImage: `url(${QuantaidLogoUantaid})`,
               width: isCollapsed ? '0px' : '100px',
@@ -191,8 +188,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           onClick={toggleProfileDropdown}
           className="
             profile-button flex w-full cursor-pointer items-center overflow-clip
-            rounded-lg border border-brand-border font-inter text-sm font-medium
-            text-brand-gray
+            rounded-lg border border-brand-border-light font-inter text-sm
+            font-medium text-brand-gray
           "
           style={{
             backgroundColor: showProfileDropdown ? '#032242' : 'transparent',
@@ -291,7 +288,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           ref={profileDropdownRef}
           className="
             absolute inset-x-5 bottom-33.75 z-1000 overflow-clip rounded-lg
-            border border-brand-border bg-brand-search px-1 py-2
+            border border-brand-border-light bg-brand-search px-1 py-2
             shadow-[0_4px_12px_rgba(0,0,0,0.3)]
           "
           style={{ animation: 'fadeInUp 200ms ease-out' }}
@@ -325,7 +322,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             </span>
           </button>
 
-          <div className="m-1.5 h-px bg-brand-border px-0.5" />
+          <div className="m-1.5 h-px bg-brand-border-light px-0.5" />
 
           <button
             onClick={onSettingsClick}

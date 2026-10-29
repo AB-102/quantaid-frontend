@@ -78,27 +78,18 @@ const Dashboard: React.FC = () => {
     layout.setChatOpen(false);
   }, [layout]);
 
-  // Wire sidebar collapse to close profile dropdown
-  layout.onSidebarCollapse(() => setShowProfileDropdown(false));
+  // Close the profile dropdown whenever the sidebar collapses
+  useEffect(() => {
+    if (layout.sidebarCollapsed) setShowProfileDropdown(false);
+  }, [layout.sidebarCollapsed]);
 
+  // The sidebar is only collapsed while the chat is open: close the chat, then show the dropdown once it expands
   const handleCollapsedProfileClick = useCallback(() => {
-    if (layout.chatOpen) {
-      layout.setChatOpen(false);
-
-      setTimeout(() => {
-        setShowProfileDropdown(true);
-      }, layout.animationDuration + 50);
-    } else {
-      if (layout.sidebarCollapsed) {
-        layout.handleSidebarToggle();
-        setTimeout(() => {
-          setShowProfileDropdown(true);
-        }, layout.animationDuration);
-      } else {
-        setShowProfileDropdown(!showProfileDropdown);
-      }
-    }
-  }, [layout, showProfileDropdown]);
+    layout.setChatOpen(false);
+    setTimeout(() => {
+      setShowProfileDropdown(true);
+    }, layout.animationDuration + 50);
+  }, [layout]);
 
   // Close profile dropdown when clicking outside
   useEffect(() => {
@@ -349,7 +340,6 @@ const Dashboard: React.FC = () => {
       <Sidebar
         currentView={view}
         isCollapsed={layout.sidebarCollapsed}
-        onToggleCollapse={layout.handleSidebarToggle}
         onNavigateToDashboard={handleNavigateToDashboard}
         onCollapsedProfileClick={handleCollapsedProfileClick}
         showProfileDropdown={showProfileDropdown}

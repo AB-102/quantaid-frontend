@@ -59,8 +59,9 @@ const LessonView: React.FC<LessonViewProps> = ({
             className="
               my-6.25 mb-17.5 block cursor-pointer rounded-lg border-none
               bg-brand-light-blue px-3 py-2 font-inter text-[1.15rem]
-              leading-[1.6] font-semibold text-brand-bg
-              transition-[background-color] duration-200
+              leading-[1.6] font-semibold text-brand-bg transition-opacity
+              duration-200
+              hover:opacity-90
             "
             onClick={handleOpenQuiz}
             aria-label="Start quiz for this lesson"
@@ -97,8 +98,9 @@ const LessonView: React.FC<LessonViewProps> = ({
             className="
               my-6.25 mb-17.5 block cursor-pointer rounded-lg border-none
               bg-brand-light-blue px-3 py-2 font-inter text-[1.15rem]
-              leading-[1.6] font-semibold text-brand-bg
-              transition-[background-color] duration-200
+              leading-[1.6] font-semibold text-brand-bg transition-opacity
+              duration-200
+              hover:opacity-90
             "
             onClick={handleOpenQuiz}
           >

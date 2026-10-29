@@ -58,7 +58,21 @@ export default tseslint.config(
       'better-tailwindcss/no-duplicate-classes': 'error',
       'better-tailwindcss/no-conflicting-classes': 'error',
       'better-tailwindcss/no-unnecessary-whitespace': 'warn',
-      'better-tailwindcss/no-unknown-classes': 'off',
+      // Catches utilities that generate no CSS (e.g. a color token missing from @theme).
+      // The ignored names are our own hook classes, styled by unlayered rules in src/index.css.
+      'better-tailwindcss/no-unknown-classes': ['error', {
+        ignore: [
+          '^global-chat-',
+          '-coordinated$',
+          '^nav-button',
+          '^profile-',
+          '^feedback-',
+          '^quiz-',
+          '^search-',
+          '^(back|skip|hobby|topic|breadcrumb|chat|text)-button$',
+          '^(no-transition|dashboard-content|default-scrollbar|content-animated|lesson-header|app-container|resizer|revisit-lesson-link|tutorial-popup|popup)$',
+        ],
+      }],
 
       // ── Type assertions & escape hatches — BANNED ─────────────────
       // Ban `as` type assertions entirely (forces proper typing)

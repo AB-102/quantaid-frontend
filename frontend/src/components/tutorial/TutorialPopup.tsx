@@ -235,6 +235,8 @@ const TutorialPopup: React.FC<TutorialPopupProps> = ({
 								className="
           cursor-pointer rounded-md border border-[#A8BAD8] bg-transparent px-2
           py-1.5 font-inter text-base font-medium text-[#A8BAD8]
+          transition-colors duration-200
+          hover:bg-white/10
         "
 							>
 								Back
@@ -264,7 +266,9 @@ const TutorialPopup: React.FC<TutorialPopupProps> = ({
 								aria-hidden={!(showNext || buttonLabel === 'Got it')}
 								className="
           cursor-pointer rounded-sm border-none bg-[#A8BAD8] px-2 py-1.5
-          font-inter text-base font-medium text-[#030C34]
+          font-inter text-base font-medium text-[#030C34] transition-opacity
+          duration-200
+          hover:opacity-90
         "
 							>
 								{buttonLabel}

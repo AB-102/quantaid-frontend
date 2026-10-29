@@ -16,7 +16,6 @@ describe('Sidebar', () => {
       <Sidebar
         currentView="dashboard"
         isCollapsed={false}
-        onToggleCollapse={vi.fn()}
         onNavigateToDashboard={vi.fn()}
         onCollapsedProfileClick={vi.fn()}
         showProfileDropdown={false}

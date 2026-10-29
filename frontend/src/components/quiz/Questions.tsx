@@ -36,7 +36,7 @@ const Questions: React.FC<QuestionsProps> = ({
     if (!questionCompleted) {
       if (selectedOption === idx) return { bg: 'bg-[#253462]', border: 'border-[#414D61]' };
       if (wrongChoices.includes(idx)) return { bg: 'bg-[rgba(51,24,27,0.8)]', border: 'border-[#85131E]' };
-      return { bg: 'bg-transparent', border: 'border-brand-border' };
+      return { bg: 'bg-transparent hover:bg-white/5', border: 'border-brand-border' };
     }
     if (idx === question.correctAnswer) return { bg: 'bg-[rgba(29,55,35,0.8)]', border: 'border-[#407440]' };
     if (wrongChoices.includes(idx)) return { bg: 'bg-[rgba(51,24,27,0.8)]', border: 'border-[#85131E]' };
@@ -75,8 +75,8 @@ const Questions: React.FC<QuestionsProps> = ({
             <button
               key={`q${currentIndex}-opt${idx}`}
               className={`
-                quiz-option appearance-none rounded-lg border-2 px-6 py-3.5
-                text-left transition-[background-color] duration-200
+                quiz-option cursor-pointer appearance-none rounded-lg border-2
+                px-6 py-3.5 text-left transition-[background-color] duration-200
                 ${bg}
                 ${border}
               `}

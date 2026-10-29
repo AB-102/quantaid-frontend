@@ -19,7 +19,7 @@
   --color-brand-hover: #212E44;
   --color-brand-search: #032242;
   --color-brand-panel: #17213A;
-  /* --color-brand-card: #253655; */
+  --color-brand-card: #253655;
   --color-brand-dark-panel: #181F31;
   --color-brand-section: #2A2E46;
 
@@ -141,12 +141,6 @@ body {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 10;
   font-size: 0.9em;
-}
-
-/* ── Highlight analogy button ────────────────────────────────────── */
-.highlight-analogy-btn:hover {
-  background-color: #9bb0dd !important;
-  transform: translateY(-1px);
 }
 
 /* ── Focus rings (consolidated) ─────────────────────────────────── */
@@ -280,15 +274,6 @@ label:has(input[type="radio"]:checked):hover {
 [aria-label="Profile settings"] label:has(input[type="checkbox"]):hover,
 [aria-label="Profile settings"] label:has(input[type="radio"]):hover {
   border-color: #1E4277 !important;
-}
-
-[aria-label="Profile settings"] input[type="text"]:focus {
-  border-bottom-color: #7BA8ED !important;
-}
-
-[aria-label="Profile settings"] input[type="text"]::placeholder {
-  color: #666 !important;
-  font-style: italic;
 }
 
 [aria-label="Profile settings"] button:hover:not(:disabled) {
@@ -560,16 +545,6 @@ button.skip-button:hover:not(:disabled) {
 
   .global-chat-coordinated {
     transition-duration: 300ms;
-  }
-}
-
-@media (max-width: 800px) {
-  .main-panel-coordinated {
-    min-width: 250px;
-  }
-
-  .dashboard-content {
-    padding: 1rem 2rem;
   }
 }
 

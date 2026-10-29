@@ -240,10 +240,10 @@ const HighlightableInstructionsForReading: React.FC<Props> = ({
         >
           <button
             className="
-              highlight-analogy-btn flex flex-1 cursor-pointer items-center
-              justify-center gap-0 rounded-none border-none bg-[#E6F1FB] p-2
-              font-inter text-lg font-medium whitespace-nowrap text-[#07073D]
-              transition-all duration-200
+              flex flex-1 cursor-pointer items-center justify-center gap-0
+              rounded-none border-none bg-[#E6F1FB] p-2 font-inter text-lg
+              font-medium whitespace-nowrap text-[#07073D] transition-all
+              duration-200
             "
             onClick={() => {
               onExplain(highlightedText);
@@ -256,10 +256,9 @@ const HighlightableInstructionsForReading: React.FC<Props> = ({
           </button>
           <button
             className="
-              highlight-analogy-btn flex cursor-pointer items-center
-              justify-center rounded-none border-none bg-[#A7BAE2] p-2
-              font-inter text-lg font-medium whitespace-nowrap text-[#07073D]
-              transition-all duration-200
+              flex cursor-pointer items-center justify-center rounded-none
+              border-none bg-[#A7BAE2] p-2 font-inter text-lg font-medium
+              whitespace-nowrap text-[#07073D] transition-all duration-200
             "
             style={{ flex: '1.3' }}
             onClick={() => {

@@ -170,10 +170,10 @@ const DefaultStep: React.FC<{
           <div className="flex h-15 items-center gap-4">
             <button
               className="
-                profile-bottom-buttons skip-button min-w-20 cursor-pointer
-                border-transparent bg-transparent px-10.5 py-3 font-sarabun
-                text-[22px] font-medium text-[#AAABAF] transition-all
-                duration-200
+                min-w-20 cursor-pointer border-transparent bg-transparent
+                px-10.5 py-3 font-sarabun text-[22px] font-medium text-[#AAABAF]
+                transition-all duration-200
+                hover:text-[#AAABAF]/90
               "
               onClick={handleSkipButtonClick}
               aria-label="Skip onboarding questions"

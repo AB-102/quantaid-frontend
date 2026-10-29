@@ -479,6 +479,7 @@ const GlobalChat: React.FC<Props> = ({
               mb-2 w-full cursor-pointer rounded-lg border-none bg-[#7B99C9]
               px-4 py-3 font-inter text-sm font-medium text-black
               transition-opacity duration-200
+              hover:opacity-90
             "
           >
             + New Chat
@@ -499,6 +500,7 @@ const GlobalChat: React.FC<Props> = ({
                     flex cursor-pointer items-center gap-2 rounded-lg
                     bg-brand-section px-3.5 py-3 transition-[background]
                     duration-150
+                    hover:bg-[#353A56]
                   "
                   onClick={() => handleRestoreSession(session)}
                 >
@@ -534,6 +536,7 @@ const GlobalChat: React.FC<Props> = ({
                 mt-3 w-full cursor-pointer rounded-lg border border-error-alt
                 bg-transparent px-4 py-2.5 font-inter text-[13px] font-normal
                 text-error-alt transition-[background,color] duration-150
+                hover:bg-error-alt/10
               "
             >
               Clear all history
@@ -601,6 +604,7 @@ const GlobalChat: React.FC<Props> = ({
                     rounded-lg border border-white bg-brand-dark-panel px-4.5
                     py-2 font-inter text-sm font-normal text-white
                     transition-all duration-200
+                    hover:bg-white/10
                   "
                 >
                   Try another analogy
