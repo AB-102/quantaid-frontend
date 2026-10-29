@@ -25,6 +25,10 @@ npm run test:run      # Run the tests once
 npm run lint          # Lint
 ```
 
+## Email Templates
+
+`transactional/` holds the backend's email templates, built with React Email. It's a separate package next to `frontend/`; see [transactional/README.md](transactional/README.md).
+
 ## Project Structure
 
 ```

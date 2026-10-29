@@ -15,6 +15,9 @@ frontend/dist-ssr/
 coverage/
 frontend/coverage/
 
+# Exported email HTML; the copy that gets committed lives in quantaid-backend/emails/
+transactional/out/
+
 # Vite dev-server config cache
 *.timestamp-*.mjs
 
