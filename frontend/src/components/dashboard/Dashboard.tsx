@@ -30,6 +30,8 @@ const Dashboard: React.FC = () => {
   const [currentCourse, setCurrentCourse] = useState<number | null>(null);
   const [currentLesson, setCurrentLesson] = useState<number | null>(null);
   const [quizOpen, setQuizOpen] = useState(false);
+  // Changing the Quiz's key remounts it, which starts a retry from a fresh first question
+  const [quizAttempt, setQuizAttempt] = useState(0);
 
   /* ---------- data (progress, courses, lesson content) ----------- */
   const data = useDashboardData({ currentLesson });
@@ -290,10 +292,8 @@ const Dashboard: React.FC = () => {
       try {
           await data.fetchUserProgress();
 
-          if (!passed) {
-            alert('You need 70% or higher to pass. Keep learning and try again!');
-          } else {
-            alert('Great job! Lesson completed.');
+          // The results screen already told the student how they did. After a fail they're back on the lesson.
+          if (passed) {
             if (currentCourse !== null) {
               goToCourseDetail(currentCourse);
             } else {
@@ -480,10 +480,12 @@ const Dashboard: React.FC = () => {
             rounded-none bg-transparent
           ">
             <Quiz
+              key={quizAttempt}
               courseId={currentLesson}
               questions={data.currentQuiz}
               lessonContent={data.currentLessonContent}
               onExit={() => { setQuizOpen(false) }}
+              onRetry={() => setQuizAttempt(attempt => attempt + 1)}
               onComplete={(score: number, passed: boolean) => { void onQuizComplete(score, passed); }}
             />
           </div>

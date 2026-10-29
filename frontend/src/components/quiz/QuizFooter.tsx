@@ -3,6 +3,8 @@ import { MdOutlineThumbsUpDown } from 'react-icons/md';
 
 interface QuizFooterProps {
   showResultsScreen: boolean;
+  // Whether the finished quiz was passed. After a fail, the results screen offers REVIEW LESSON and TRY AGAIN.
+  passed: boolean;
   hasSubmitted: boolean;
   questionCompleted: boolean;
   showAnswersEnabled: boolean;
@@ -19,11 +21,13 @@ interface QuizFooterProps {
   onSkip: () => void;
   onReviewConcept: () => void;
   onCloseReviewConcept: () => void;
+  onReviewLesson: () => void;
   onContinue: () => void;
 }
 
 const QuizFooter: React.FC<QuizFooterProps> = ({
   showResultsScreen,
+  passed,
   hasSubmitted,
   questionCompleted,
   showAnswersEnabled,
@@ -38,9 +42,11 @@ const QuizFooter: React.FC<QuizFooterProps> = ({
   onSkip,
   onReviewConcept,
   onCloseReviewConcept,
+  onReviewLesson,
   onContinue,
 }) => {
   const isDisabled = !showResultsScreen && !canContinue && !questionCompleted;
+  const failedQuiz = showResultsScreen && !passed;
 
   return (
     <div
@@ -164,6 +170,19 @@ const QuizFooter: React.FC<QuizFooterProps> = ({
             </button>
           )}
 
+          {failedQuiz && (
+            <button
+              className="
+                quiz-bottom-buttons min-w-20 cursor-pointer border-transparent
+                bg-transparent px-10.5 py-3 font-sarabun text-[22px] font-medium
+                text-[#AAABAF] transition-all duration-200
+              "
+              onClick={onReviewLesson}
+            >
+              REVIEW LESSON
+            </button>
+          )}
+
           <button
             className="
               quiz-bottom-buttons min-w-25 rounded-2xl border-none px-10.5 py-3
@@ -184,7 +203,7 @@ const QuizFooter: React.FC<QuizFooterProps> = ({
                   : (canContinue ? '#142748' : '#2A3A52')),
             }}
           >
-            CONTINUE
+            {failedQuiz ? 'TRY AGAIN' : 'CONTINUE'}
           </button>
         </div>
       </div>

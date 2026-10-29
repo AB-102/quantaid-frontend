@@ -3,6 +3,8 @@ import React from 'react';
 interface QuizResultsScreenProps {
   score: number;
   totalQuestions: number;
+  passed: boolean;
+  passPercent: number;
   durationMinutes: number | null;
   durationSeconds: number | null;
 }
@@ -10,6 +12,8 @@ interface QuizResultsScreenProps {
 const QuizResultsScreen: React.FC<QuizResultsScreenProps> = ({
   score,
   totalQuestions,
+  passed,
+  passPercent,
   durationMinutes,
   durationSeconds,
 }) => {
@@ -28,9 +32,18 @@ const QuizResultsScreen: React.FC<QuizResultsScreenProps> = ({
 
   return (
     <div className="flex size-full flex-col items-center justify-center p-10">
-      <h1 className="
-        mb-12.5 text-center font-inter text-[36px] font-semibold text-white
-      ">Lesson complete!</h1>
+      <div className="mb-12.5 text-center">
+        <h1 className="m-0 font-inter text-[36px] font-semibold text-white">
+          {passed ? 'Lesson complete!' : 'Not quite there yet'}
+        </h1>
+        {!passed && (
+          <p className="
+            mt-3 mb-0 font-inter text-lg font-normal text-brand-cool
+          ">
+            You need {passPercent}% to pass. Review the lesson, then try the quiz again.
+          </p>
+        )}
+      </div>
 
       <div className="mb-15 flex items-center justify-center gap-20">
         {/* Accuracy Circle */}
@@ -50,7 +63,7 @@ const QuizResultsScreen: React.FC<QuizResultsScreenProps> = ({
                 cy="35"
                 r="25"
                 fill="none"
-                stroke="#92B03C"
+                stroke={passed ? '#92B03C' : '#FFC107'}
                 strokeWidth="4.8"
                 strokeDasharray={circumferenceResults}
                 strokeDashoffset={strokeDashoffsetResults}

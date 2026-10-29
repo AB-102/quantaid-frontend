@@ -22,13 +22,17 @@ interface QuizProps {
   questions: Question[];
   onComplete: (score: number, passed: boolean) => void;
   onExit: () => void;
+  // Start the quiz over, from its results screen after a fail
+  onRetry: () => void;
   courseId: number;
   lessonContent?: LessonContent;
 }
 
 const TIME_LIMIT = 30;
+// The score a student needs to pass, as a percentage of the questions
+const PASS_PERCENT = 70;
 
-const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, lessonContent }) => {
+const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, onRetry, courseId, lessonContent }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -73,7 +77,7 @@ const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, le
     if (progressSaved) return;
 
     const pct = Math.round((score / questions.length) * 100);
-    const passed = pct >= 70;
+    const passed = pct >= PASS_PERCENT;
 
     const quizResultData = {
       courseId: courseId,
@@ -290,10 +294,16 @@ const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, le
     };
   };
 
+  const passed = Math.round((score / questions.length) * 100) >= PASS_PERCENT;
+
+  // On the results screen, the main button continues after a pass and starts the quiz over after a fail
   const handleContinue = () => {
     if (showResultsScreen) {
-      const pct = Math.round((score / questions.length) * 100);
-      onComplete(score, pct >= 70);
+      if (passed) {
+        onComplete(score, true);
+      } else {
+        onRetry();
+      }
     } else if (questionCompleted) {
       handleNext();
     } else {
@@ -356,6 +366,8 @@ const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, le
           <QuizResultsScreen
             score={score}
             totalQuestions={questions.length}
+            passed={passed}
+            passPercent={PASS_PERCENT}
             durationMinutes={duration?.minutes ?? null}
             durationSeconds={duration?.seconds ?? null}
           />
@@ -498,6 +510,7 @@ const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, le
 
       <QuizFooter
         showResultsScreen={showResultsScreen}
+        passed={passed}
         hasSubmitted={hasSubmitted}
         questionCompleted={questionCompleted}
         showAnswersEnabled={settings.showAnswersEnabled}
@@ -514,6 +527,7 @@ const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, le
         onSkip={handleSkip}
         onReviewConcept={handleReviewConcept}
         onCloseReviewConcept={handleCloseReviewConcept}
+        onReviewLesson={() => onComplete(score, false)}
         onContinue={handleContinue}
       />
 

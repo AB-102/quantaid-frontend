@@ -25,6 +25,7 @@ describe('Quiz', () => {
         questions={mockQuestions}
         onComplete={vi.fn()}
         onExit={vi.fn()}
+        onRetry={vi.fn()}
         courseId={0}
       />
     )
@@ -47,6 +48,7 @@ describe('Quiz review', () => {
         }}
         onComplete={vi.fn()}
         onExit={vi.fn()}
+        onRetry={vi.fn()}
         courseId={0}
       />
     )
@@ -56,5 +58,36 @@ describe('Quiz review', () => {
 
     expect(screen.getByText(/A qubit in superposition is in/)).toBeInTheDocument()
     expect(screen.queryByText(/unrelated opening/)).not.toBeInTheDocument()
+  })
+})
+
+describe('Quiz results', () => {
+  it('after a fail, offers to review the lesson or try again instead of continuing', async () => {
+    const user = userEvent.setup()
+    const onComplete = vi.fn()
+    const onRetry = vi.fn()
+    render(<Quiz questions={mockQuestions} onComplete={onComplete} onExit={vi.fn()} onRetry={onRetry} courseId={0} />)
+
+    await user.click(screen.getByRole('button', { name: 'SKIP' }))
+
+    expect(await screen.findByRole('heading', { name: 'Not quite there yet' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'TRY AGAIN' }))
+    expect(onRetry).toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: 'REVIEW LESSON' }))
+    expect(onComplete).toHaveBeenCalledWith(0, false)
+  })
+
+  it('after a pass, continues', async () => {
+    const user = userEvent.setup()
+    const onComplete = vi.fn()
+    render(<Quiz questions={mockQuestions} onComplete={onComplete} onExit={vi.fn()} onRetry={vi.fn()} courseId={0} />)
+
+    await user.click(screen.getByRole('button', { name: /Multiple states at once/ }))
+    await user.click(screen.getByRole('button', { name: 'CONTINUE' }))
+    await user.click(await screen.findByRole('button', { name: 'CONTINUE' }))
+
+    expect(await screen.findByRole('heading', { name: 'Lesson complete!' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'CONTINUE' }))
+    expect(onComplete).toHaveBeenCalledWith(1, true)
   })
 })

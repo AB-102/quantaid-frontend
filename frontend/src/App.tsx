@@ -37,6 +37,8 @@ const QuizPage: React.FC = () => {
   const id = Number(courseId);
   const [questions, setQuestions] = useState<Question[] | null>(null);
   const [loadError, setLoadError] = useState(false);
+  // Changing the Quiz's key remounts it, which starts a retry from a fresh first question
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (isNaN(id)) return;
@@ -50,10 +52,12 @@ const QuizPage: React.FC = () => {
 
   return (
     <Quiz
+      key={attempt}
       courseId={id}
       questions={questions}
       onComplete={() => { void navigate('/map'); }}
       onExit={() => { void navigate('/map'); }}
+      onRetry={() => setAttempt(n => n + 1)}
     />
   );
 };
