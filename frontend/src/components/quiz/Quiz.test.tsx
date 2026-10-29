@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import Quiz from './Quiz'
 import type { Question } from '@/types/quiz'
 
@@ -28,5 +29,32 @@ describe('Quiz', () => {
       />
     )
     expect(screen.getByText('What is superposition?')).toBeInTheDocument()
+  })
+})
+
+describe('Quiz review', () => {
+  it('shows the lesson content the question is linked to', async () => {
+    const user = userEvent.setup()
+    render(
+      <Quiz
+        questions={[{ ...mockQuestions[0], lessonBlockIds: ['superposition'] }]}
+        lessonContent={{
+          title: 'Basic Principles',
+          blocks: [
+            { type: 'paragraph', text: 'An unrelated opening paragraph.' },
+            { type: 'paragraph', text: 'A qubit in superposition is in **both** states.', id: 'superposition' },
+          ],
+        }}
+        onComplete={vi.fn()}
+        onExit={vi.fn()}
+        courseId={0}
+      />
+    )
+    await user.click(screen.getByRole('button', { name: /Multiple states at once/ }))
+    await user.click(screen.getByRole('button', { name: 'CONTINUE' }))
+    await user.click(await screen.findByRole('button', { name: 'REVIEW CONCEPT' }))
+
+    expect(screen.getByText(/A qubit in superposition is in/)).toBeInTheDocument()
+    expect(screen.queryByText(/unrelated opening/)).not.toBeInTheDocument()
   })
 })

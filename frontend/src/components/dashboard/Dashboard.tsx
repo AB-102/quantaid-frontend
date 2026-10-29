@@ -61,6 +61,9 @@ const Dashboard: React.FC = () => {
   /* ---------- scrolling content ref --------------------------------- */
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // The header's Chat button: the chat panel grows out of it and returns focus to it
+  const chatButtonRef = useRef<HTMLButtonElement>(null);
+
   /* ---------- card FLIP animation -------------------------------- */
   const { cardRef: flipCardRef } = useCardFlipAnimation({ containerRef: contentRef });
 
@@ -331,8 +334,8 @@ const Dashboard: React.FC = () => {
   return (
     <div
       className={`
-        flex h-screen overflow-clip bg-brand-bg
-        font-inter ${layout.effectiveDuration === 0 ? 'no-transition' : ''}
+        flex h-screen overflow-clip bg-brand-bg font-inter
+        ${layout.effectiveDuration === 0 ? 'no-transition' : ''}
       `}
     >
 
@@ -367,6 +370,8 @@ const Dashboard: React.FC = () => {
         onSearchSubmit={handleSearchSubmit}
         view={view}
         quizOpen={quizOpen}
+        chatOpen={layout.chatOpen}
+        chatButtonRef={chatButtonRef}
         onChatToggle={layout.handleChatToggle}
         headerStyle={layout.getHeaderStyles()}
       />
@@ -387,7 +392,10 @@ const Dashboard: React.FC = () => {
             h-[calc(100vh-80px)] flex-1 overflow-x-hidden overflow-y-auto px-16
             py-8
           "
-          tabIndex={0}
+          // Browsers can make a scrollable area its own tab stop; its focus ring is hidden under the header, so
+          // it looked like an invisible stop. Tab goes straight to the content instead, and once focus is on any
+          // item inside (a breadcrumb, card or button), the arrow keys and Page Down still scroll this area.
+          tabIndex={-1}
           role="region"
           aria-label="Scrollable content area"
         >
@@ -455,10 +463,10 @@ const Dashboard: React.FC = () => {
           highlightText={highlightText}
           highlightMode={highlightMode}
           courseId={currentLesson ?? 0}
+          width={layout.chatWidth}
           onWidthChange={layout.handleChatWidthChange}
           sidebarWidth={layout.currentSidebarWidth}
-          animationDuration={layout.effectiveDuration}
-          animationEasing={layout.animationEasing}
+          launcherRef={chatButtonRef}
         />
       )}
 
@@ -474,11 +482,7 @@ const Dashboard: React.FC = () => {
             <Quiz
               courseId={currentLesson}
               questions={data.currentQuiz}
-              lessonContent={data.currentLessonContent ? {
-                title: data.currentLessonContent.title,
-                paragraphs: data.currentLessonContent.paragraphs.map(p => typeof p === 'string' ? p : p.text),
-                interactiveTerms: data.currentLessonContent.interactiveTerms,
-              } : undefined}
+              lessonContent={data.currentLessonContent}
               onExit={() => { setQuizOpen(false) }}
               onComplete={(score: number, passed: boolean) => { void onQuizComplete(score, passed); }}
             />

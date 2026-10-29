@@ -43,4 +43,20 @@ describe('useDashboardLayout', () => {
     act(() => { result.current.handleChatToggle() })
     expect(result.current.sidebarCollapsed).toBe(false)
   })
+
+  it('makes room for the chat however it opens, at its real width', () => {
+    setWindowWidth(1600)
+    const { result } = renderHook(() => useDashboardLayout())
+
+    // Explain / View Analogy open the chat directly, without the toggle
+    act(() => { result.current.setChatOpen(true) })
+    expect(result.current.getMainPanelStyles().maxWidth).toBe('calc(100vw - 250px - 420px)')
+
+    // A dragged width is kept through closing and reopening
+    act(() => { result.current.handleChatWidthChange(500, false) })
+    act(() => { result.current.handleChatToggle() })
+    expect(result.current.getMainPanelStyles().maxWidth).toBe('calc(100vw - 250px)')
+    act(() => { result.current.handleChatToggle() })
+    expect(result.current.getMainPanelStyles().maxWidth).toBe('calc(100vw - 250px - 500px)')
+  })
 })

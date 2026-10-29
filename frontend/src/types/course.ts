@@ -22,6 +22,19 @@ export interface Course {
   concepts: Concept[];
 }
 
+// A row of courses on the student dashboard
+export interface DashboardSection {
+  id: string;
+  title: string;
+  order: number;
+  courses: number[]; // course ids, in display order
+}
+
+export interface DashboardConfig {
+  sections: DashboardSection[];
+  courses: Course[];
+}
+
 export interface CompletedQuiz {
   courseId: number;
   score: number;

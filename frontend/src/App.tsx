@@ -21,10 +21,12 @@ import Login from './components/auth/Login';
 import ProfileCreation from './components/profile/ProfileCreation';
 import Dashboard from './components/dashboard/Dashboard';
 import Quiz from './components/quiz/Quiz';
-import AdminDashboard from './components/admin/AdminDashboard';
 import api from './api';
 import type { Question } from './types/quiz';
 import { AuthProvider, ProtectedRoute, AdminRoute, AdminToggle } from './AuthContext';
+
+// The admin dashboard (and its editor libraries) loads only when an admin opens it
+const AdminDashboard = React.lazy(() => import('./components/admin/AdminDashboard'));
 
 /**
  * QuizPage fetches quiz questions from the API by courseId and renders the Quiz component.
@@ -66,7 +68,9 @@ const App: React.FC = () => {
             <Route path="/profile-creation" element={<ProtectedRoute><ProfileCreation /></ProtectedRoute>} />
             <Route path="/map" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/quiz/:courseId" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
-            <Route path="/admin-dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            <Route path="/admin-dashboard" element={<AdminRoute><React.Suspense fallback={<p className="
+              p-8 text-[#9DA7B7]
+            ">Loading…</p>}><AdminDashboard /></React.Suspense></AdminRoute>} />
             <Route path="*" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           </Routes>
           <AdminToggle />

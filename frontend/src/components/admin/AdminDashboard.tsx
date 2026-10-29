@@ -1,6 +1,6 @@
 // src/components/AdminDashboard.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import ContentManager from './ContentManager';
+import ContentWorkspace from './content/ContentWorkspace';
 import api, { BACKEND_URL } from '@/api';
 
 interface UserItem {
@@ -202,8 +202,10 @@ const AdminDashboard: React.FC = () => {
         </button>
       </div>
 
-      {/* Content Management Tab */}
-      {activeTab === 'content' && <ContentManager />}
+      {/* Content Management Tab: kept mounted while hidden, so switching tabs never loses unsaved edits */}
+      <div hidden={activeTab !== 'content'}>
+        <ContentWorkspace />
+      </div>
 
       {/* Users Tab */}
       {activeTab === 'users' && (

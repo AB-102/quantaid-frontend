@@ -1,8 +1,12 @@
 // src/components/GlobalChat.tsx
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MdClose, MdArrowUpward, MdHistory, MdDeleteOutline, MdArrowBack } from "react-icons/md";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { MdClose, MdArrowUpward, MdHistory, MdDeleteOutline, MdArrowBack, MdOutlinePerson } from "react-icons/md";
 import api from '@/api';
+import {
+  BUTTON_COLOR, CONTENT_FADE_IN_DELAY_MS, CONTENT_FADE_OUT_MS, FACE_FADE_IN_MS, FACE_FADE_OUT_MS, MORPH_CLOSE_MS,
+  MORPH_EASING, MORPH_OPEN_MS, PANEL_COLOR,
+} from './chatMorph';
 
 const MAX_STORED_MESSAGES = 50;
 const STORAGE_PREFIX = 'quantaid:chat:';
@@ -26,10 +30,22 @@ interface Props {
   highlightText: string | null;
   highlightMode: 'explain' | 'analogy' | null;
   courseId: number;
+  // The panel's width lives in the dashboard layout, so the lesson text makes room for it however the chat opens
+  width: number;
   onWidthChange?: (width: number, isResizing?: boolean) => void;
   sidebarWidth?: number;
-  animationDuration?: number;
-  animationEasing?: string;
+  // The header's Chat button: the panel grows out of it, and focus goes back to it when the panel closes
+  launcherRef: React.RefObject<HTMLButtonElement>;
+}
+
+// Where the Chat button sits, relative to the panel's box
+interface ButtonBox {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+  width: number;
+  height: number;
 }
 
 // --- localStorage helpers ---
@@ -70,16 +86,15 @@ const GlobalChat: React.FC<Props> = ({
   highlightText,
   highlightMode,
   courseId,
+  width,
   onWidthChange,
   sidebarWidth = 250,
-  animationDuration = 300,
-  animationEasing = 'cubic-bezier(0.4, 0, 0.2, 1)',
+  launcherRef,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [lastTopic, setLastTopic] = useState<string | null>(null);
-  const [width, setWidth] = useState(420);
   const [isResizing, setIsResizing] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [sessions, setSessions] = useState<StoredSession[]>([]);
@@ -87,7 +102,11 @@ const GlobalChat: React.FC<Props> = ({
   const bodyRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const lastKey = useRef<string>('');
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLElement>(null);
+  const [buttonBox, setButtonBox] = useState<ButtonBox | null>(null);
+  // The closing motion plays only after the chat has been opened, never on the first render
+  const [hasOpened, setHasOpened] = useState(isOpen);
+  if (isOpen && !hasOpened) setHasOpened(true);
 
   // Generate a unique session ID
   const newSessionId = useCallback(
@@ -150,7 +169,6 @@ const GlobalChat: React.FC<Props> = ({
       const maxWidth = Math.min(600, window.innerWidth - sidebarWidth - 100);
 
       const constrainedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
-      setWidth(constrainedWidth);
 
       // Notify parent that we're actively resizing
       if (onWidthChange) {
@@ -181,6 +199,48 @@ const GlobalChat: React.FC<Props> = ({
       document.body.style.userSelect = '';
     };
   }, [isResizing, sidebarWidth, width, onWidthChange]);
+
+  // While closed, the panel is clipped down to the Chat button's rectangle. It's measured whenever that could have
+  // changed, so opening always grows from where the button really is. The --chat-button-* properties feed the clip
+  // shapes in index.css; without them, the panel spills in from the right edge instead.
+  useLayoutEffect(() => {
+    if (isOpen) return;
+    const measure = () => {
+      const panelElement = containerRef.current;
+      const panel = panelElement?.getBoundingClientRect();
+      const button = launcherRef.current?.getBoundingClientRect();
+      if (!panelElement || !panel || !button) {
+        for (const side of ['top', 'right', 'bottom', 'left']) panelElement?.style.removeProperty(`--chat-button-${side}`);
+        setButtonBox(null);
+        return;
+      }
+      const box: ButtonBox = {
+        top: button.top - panel.top,
+        right: panel.right - button.right,
+        bottom: panel.bottom - button.bottom,
+        left: button.left - panel.left,
+        width: button.width,
+        height: button.height,
+      };
+      panelElement.style.setProperty('--chat-button-top', `${box.top}px`);
+      panelElement.style.setProperty('--chat-button-right', `${box.right}px`);
+      panelElement.style.setProperty('--chat-button-bottom', `${box.bottom}px`);
+      panelElement.style.setProperty('--chat-button-left', `${box.left}px`);
+      setButtonBox(box);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [isOpen, launcherRef, width]);
+
+  // Closed, the panel is out of the tab order and hidden from screen readers. If focus was inside it, focus goes back
+  // to the Chat button. Declared before the effect below, so the input can take focus as soon as the panel opens.
+  useEffect(() => {
+    const panel = containerRef.current;
+    if (!panel) return;
+    if (!isOpen && panel.contains(document.activeElement)) launcherRef.current?.focus();
+    panel.inert = !isOpen;
+  }, [isOpen, launcherRef]);
 
   // Auto-scroll when new messages arrive or chat opens
   useEffect(() => {
@@ -358,11 +418,31 @@ const GlobalChat: React.FC<Props> = ({
     setIsResizing(true);
   };
 
-  const getContainerStyles = (): React.CSSProperties => ({
-    width: width,
-    transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-    transition: `transform ${animationDuration}ms ${animationEasing}`,
-  });
+  // The panel grows out of the Chat button and shrinks back into it (see chatMorph.ts). Its clip shapes are the
+  // chat-spill-open/-close keyframes in index.css.
+  const getContainerStyles = (): React.CSSProperties => isOpen
+    ? {
+      width,
+      backgroundColor: PANEL_COLOR,
+      visibility: 'visible',
+      animation: `chat-spill-open ${MORPH_OPEN_MS}ms both`,
+      transition: `background-color ${MORPH_OPEN_MS}ms ${MORPH_EASING}`,
+    }
+    : {
+      width,
+      backgroundColor: BUTTON_COLOR,
+      visibility: 'hidden',
+      animation: hasOpened ? `chat-spill-close ${MORPH_CLOSE_MS}ms both` : 'none',
+      transition: `background-color ${MORPH_CLOSE_MS}ms ${MORPH_EASING}, visibility 0s linear ${MORPH_CLOSE_MS}ms`,
+    };
+
+  const faceStyle: React.CSSProperties = isOpen
+    ? { opacity: 0, transition: `opacity ${FACE_FADE_OUT_MS}ms ease-out` }
+    : { opacity: 1, transition: `opacity ${FACE_FADE_IN_MS}ms ease-in ${MORPH_CLOSE_MS - FACE_FADE_IN_MS}ms` };
+
+  const contentStyle: React.CSSProperties = isOpen
+    ? { opacity: 1, transition: `opacity ${MORPH_OPEN_MS - CONTENT_FADE_IN_DELAY_MS}ms ease-out ${CONTENT_FADE_IN_DELAY_MS}ms` }
+    : { opacity: 0, transition: `opacity ${CONTENT_FADE_OUT_MS}ms ease-in` };
 
   const formatSessionDate = (timestamp: number): string => {
     const date = new Date(timestamp);
@@ -391,262 +471,289 @@ const GlobalChat: React.FC<Props> = ({
     .sort((a, b) => b.timestamp - a.timestamp);
 
   return (
-    <div
+    <aside
       ref={containerRef}
+      id="ai-chat-panel"
+      aria-label="Chat"
+      data-open={isOpen}
       style={getContainerStyles()}
+      onKeyDown={e => {
+        if (e.key === 'Escape') {
+          e.stopPropagation();
+          onClose();
+        }
+      }}
       className="
         global-chat-coordinated fixed inset-y-0 right-0 z-2000 flex h-full
-        max-w-150 min-w-75 shrink-0 flex-col bg-brand-dark-panel text-white
+        max-w-150 min-w-75 shrink-0 flex-col text-white
         shadow-[0_0_10px_rgba(0,0,0,0.4)]
       "
     >
-      {isOpen && (
+      {/* A copy of the Chat button where the real one sits, so the panel takes its place seamlessly */}
+      {buttonBox && (
         <div
-          onMouseDown={handleResizeStart}
+          aria-hidden="true"
+          style={{ ...faceStyle, top: buttonBox.top, left: buttonBox.left, width: buttonBox.width, height: buttonBox.height }}
           className="
-            resizer absolute inset-y-0 left-0 z-1 w-1 cursor-ew-resize
-            bg-transparent transition-[background-color] duration-150
+            pointer-events-none absolute flex items-center justify-center
+            gap-1.5 rounded-lg bg-brand-search font-inter text-base font-medium
+            text-brand-gray
           "
-        />
+        >
+          <MdOutlinePerson size="1.5em" /> <span>Chat</span>
+        </div>
       )}
 
-      <div className="
-        flex shrink-0 items-center justify-end bg-brand-dark-panel px-5 py-3
-      ">
-        {showHistory ? (
-          <>
-            <button
-              onClick={() => setShowHistory(false)}
-              aria-label="Back to chat"
-              className="
-                global-chat-icon-btn cursor-pointer border-none bg-transparent
-                px-1 py-0 leading-none text-white transition-[color]
-                duration-200
-              "
-            >
-              <MdArrowBack size={24} />
-            </button>
-            <span className="
-              flex-1 text-center font-inter text-base font-medium text-white
-            ">Chat History</span>
-            <button
-              onClick={onClose}
-              aria-label="Close"
-              className="
-                global-chat-icon-btn cursor-pointer border-none bg-transparent
-                px-1 py-0 leading-none text-white transition-[color]
-                duration-200
-              "
-            >
-              <MdClose size={24} />
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              onClick={handleChatHistoryClick}
-              aria-label="Chat History"
-              className="
-                global-chat-icon-btn cursor-pointer border-none bg-transparent
-                px-1 py-0 leading-none text-white transition-[color]
-                duration-200
-              "
-            >
-              <MdHistory size={24} />
-            </button>
-            <button
-              onClick={onClose}
-              aria-label="Close"
-              className="
-                global-chat-icon-btn cursor-pointer border-none bg-transparent
-                px-1 py-0 leading-none text-white transition-[color]
-                duration-200
-              "
-            >
-              <MdClose size={24} />
-            </button>
-          </>
-        )}
-      </div>
-
-      {showHistory ? (
-        <div className="
-          flex flex-1 flex-col gap-2 overflow-y-auto px-5 pt-0 pb-5
-        ">
-          <button
-            onClick={handleNewChat}
+      {/* The chat itself fades in once the panel has grown a little, and out before it shrinks */}
+      <div style={contentStyle} className="flex min-h-0 flex-1 flex-col">
+        {isOpen && (
+          <div
+            onMouseDown={handleResizeStart}
             className="
-              mb-2 w-full cursor-pointer rounded-lg border-none bg-[#7B99C9]
-              px-4 py-3 font-inter text-sm font-medium text-black
-              transition-opacity duration-200
-              hover:opacity-90
+              resizer absolute inset-y-0 left-0 z-1 w-1 cursor-ew-resize
+              bg-transparent transition-[background-color] duration-150
             "
-          >
-            + New Chat
-          </button>
+          />
+        )}
 
-          {pastSessions.length === 0 ? (
-            <div className="
-              shrink-0 p-7.5 text-center text-[#f8f9fa] opacity-70
-            ">
-              No previous conversations for this lesson.
-            </div>
+        <div className="
+          flex shrink-0 items-center justify-end bg-brand-dark-panel px-5 py-3
+        ">
+          {showHistory ? (
+            <>
+              <button
+                onClick={() => setShowHistory(false)}
+                aria-label="Back to chat"
+                className="
+                  global-chat-icon-btn cursor-pointer border-none bg-transparent
+                  px-1 py-0 leading-none text-white transition-[color]
+                  duration-200
+                "
+              >
+                <MdArrowBack size={24} />
+              </button>
+              <span className="
+                flex-1 text-center font-inter text-base font-medium text-white
+              ">Chat History</span>
+              <button
+                onClick={onClose}
+                aria-label="Close"
+                className="
+                  global-chat-icon-btn cursor-pointer border-none bg-transparent
+                  px-1 py-0 leading-none text-white transition-[color]
+                  duration-200
+                "
+              >
+                <MdClose size={24} />
+              </button>
+            </>
           ) : (
-            <div className="flex flex-1 flex-col gap-1 overflow-y-auto">
-              {pastSessions.map(session => (
-                <div
-                  key={session.id}
-                  className="
-                    flex cursor-pointer items-center gap-2 rounded-lg
-                    bg-brand-section px-3.5 py-3 transition-[background]
-                    duration-150
-                    hover:bg-[#353A56]
-                  "
-                  onClick={() => handleRestoreSession(session)}
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="
-                      truncate font-inter text-sm font-normal text-white
-                    ">{getSessionPreview(session)}</div>
-                    <div className="mt-1 font-inter text-xs text-[#8899AA]">
-                      {formatSessionDate(session.timestamp)} · {session.messages.length} messages
-                    </div>
-                  </div>
-                  <button
-                    onClick={(e) => handleDeleteSession(session.id, e)}
-                    aria-label="Delete conversation"
-                    className="
-                      global-chat-icon-btn flex shrink-0 cursor-pointer
-                      items-center justify-center rounded-sm border-none
-                      bg-transparent p-1 text-[#8899AA] transition-[color]
-                      duration-150
-                    "
-                  >
-                    <MdDeleteOutline size={18} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {pastSessions.length > 0 && (
-            <button
-              onClick={handleClearAllHistory}
-              className="
-                mt-3 w-full cursor-pointer rounded-lg border border-error-alt
-                bg-transparent px-4 py-2.5 font-inter text-[13px] font-normal
-                text-error-alt transition-[background,color] duration-150
-                hover:bg-error-alt/10
-              "
-            >
-              Clear all history
-            </button>
+            <>
+              <button
+                onClick={handleChatHistoryClick}
+                aria-label="Chat History"
+                className="
+                  global-chat-icon-btn cursor-pointer border-none bg-transparent
+                  px-1 py-0 leading-none text-white transition-[color]
+                  duration-200
+                "
+              >
+                <MdHistory size={24} />
+              </button>
+              <button
+                onClick={onClose}
+                aria-label="Close"
+                className="
+                  global-chat-icon-btn cursor-pointer border-none bg-transparent
+                  px-1 py-0 leading-none text-white transition-[color]
+                  duration-200
+                "
+              >
+                <MdClose size={24} />
+              </button>
+            </>
           )}
         </div>
-      ) : (
-        <>
-          <div ref={bodyRef} className="
-            flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden overflow-y-auto
-            px-5 py-3.75
+
+        {showHistory ? (
+          <div className="
+            flex flex-1 flex-col gap-2 overflow-y-auto px-5 pt-0 pb-5
           ">
-            <div className="
+            <button
+              onClick={handleNewChat}
+              className="
+                mb-2 w-full cursor-pointer rounded-lg border-none bg-[#7B99C9]
+                px-4 py-3 font-inter text-sm font-medium text-black
+                transition-opacity duration-200
+                hover:opacity-90
+              "
+            >
+              + New Chat
+            </button>
+
+            {pastSessions.length === 0 ? (
+              <div className="
+                shrink-0 p-7.5 text-center text-[#f8f9fa] opacity-70
+              ">
+                No previous conversations for this lesson.
+              </div>
+            ) : (
+              <div className="flex flex-1 flex-col gap-1 overflow-y-auto">
+                {pastSessions.map(session => (
+                  <div
+                    key={session.id}
+                    className="
+                      flex cursor-pointer items-center gap-2 rounded-lg
+                      bg-brand-section px-3.5 py-3 transition-[background]
+                      duration-150
+                      hover:bg-[#353A56]
+                    "
+                    onClick={() => handleRestoreSession(session)}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="
+                        truncate font-inter text-sm font-normal text-white
+                      ">{getSessionPreview(session)}</div>
+                      <div className="mt-1 font-inter text-xs text-[#8899AA]">
+                        {formatSessionDate(session.timestamp)} · {session.messages.length} messages
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) => handleDeleteSession(session.id, e)}
+                      aria-label="Delete conversation"
+                      className="
+                        global-chat-icon-btn flex shrink-0 cursor-pointer
+                        items-center justify-center rounded-sm border-none
+                        bg-transparent p-1 text-[#8899AA] transition-[color]
+                        duration-150
+                      "
+                    >
+                      <MdDeleteOutline size={18} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {pastSessions.length > 0 && (
+              <button
+                onClick={handleClearAllHistory}
+                className="
+                  mt-3 w-full cursor-pointer rounded-lg border border-error-alt
+                  bg-transparent px-4 py-2.5 font-inter text-[13px] font-normal
+                  text-error-alt transition-[background,color] duration-150
+                  hover:bg-error-alt/10
+                "
+              >
+                Clear all history
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            <div ref={bodyRef} className="
               flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden
               overflow-y-auto px-5 py-3.75
             ">
-              {messages.map((m, i) => (
-                <div key={i} className={m.role === 'user'
-                  ? `
-                    max-w-[80%] shrink-0 self-end rounded-[12px_12px_2px_12px]
-                    bg-[#2F3D68] px-3.75 py-2.5 font-inter font-normal
-                    wrap-break-word whitespace-pre-wrap text-white
-                  `
-                  : `
-                    max-w-full shrink-0 self-start border-none
-                    bg-brand-dark-panel px-3.75 py-2.5 font-inter font-normal
-                    wrap-break-word whitespace-pre-wrap text-white
-                  `
-                }>
-                  {m.content}
-                </div>
-              ))}
+              <div className="
+                flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden
+                overflow-y-auto px-5 py-3.75
+              ">
+                {messages.map((m, i) => (
+                  <div key={i} className={m.role === 'user'
+                    ? `
+                      max-w-[80%] shrink-0 self-end rounded-[12px_12px_2px_12px]
+                      bg-[#2F3D68] px-3.75 py-2.5 font-inter font-normal
+                      wrap-break-word whitespace-pre-wrap text-white
+                    `
+                    : `
+                      max-w-full shrink-0 self-start border-none
+                      bg-brand-dark-panel px-3.75 py-2.5 font-inter font-normal
+                      wrap-break-word whitespace-pre-wrap text-white
+                    `
+                  }>
+                    {m.content}
+                  </div>
+                ))}
 
-              {isLoading && (
-                <div className="
-                  flex shrink-0 items-center gap-2.5 font-inter font-normal
-                  text-[#f8f9fa] italic
-                ">
+                {isLoading && (
                   <div className="
-                    size-4.5 shrink-0 animate-spin rounded-full border-[3px]
-                    border-brand-border border-t-warn
-                  " />
-                  Thinking...
-                </div>
-              )}
+                    flex shrink-0 items-center gap-2.5 font-inter font-normal
+                    text-[#f8f9fa] italic
+                  ">
+                    <div className="
+                      size-4.5 shrink-0 animate-spin rounded-full border-[3px]
+                      border-brand-border border-t-warn
+                    " />
+                    Thinking...
+                  </div>
+                )}
 
-              {messages.length === 0 && !isLoading && (
+                {messages.length === 0 && !isLoading && (
+                  <div className="
+                    shrink-0 p-7.5 text-center text-[#f8f9fa] opacity-70
+                  ">
+                    Highlight lesson text or ask a question to get started.
+                  </div>
+                )}
+              </div>
+
+              {!isLoading && lastTopic && messages.slice(-1)[0]?.type === 'analogy' && (
                 <div className="
-                  shrink-0 p-7.5 text-center text-[#f8f9fa] opacity-70
+                  pointer-events-none absolute inset-x-0 bottom-15 flex
+                  justify-start px-5 py-3.75
                 ">
-                  Highlight lesson text or ask a question to get started.
+                  <button
+                    onClick={() => { void tryAnotherAnalogy(); }}
+                    className="
+                      pointer-events-auto flex cursor-pointer items-center
+                      rounded-lg border border-white bg-brand-dark-panel px-4.5
+                      py-2 font-inter text-sm font-normal text-white
+                      transition-all duration-200
+                      hover:bg-white/10
+                    "
+                  >
+                    Try another analogy
+                  </button>
                 </div>
               )}
             </div>
 
-            {!isLoading && lastTopic && messages.slice(-1)[0]?.type === 'analogy' && (
-              <div className="
-                pointer-events-none absolute inset-x-0 bottom-15 flex
-                justify-start px-5 py-3.75
-              ">
-                <button
-                  onClick={() => { void tryAnotherAnalogy(); }}
+            <div className="mt-6.25 shrink-0 bg-brand-dark-panel px-5 py-3.75">
+              <div className="relative flex items-center">
+                <input
+                  ref={inputRef}
                   className="
-                    pointer-events-auto flex cursor-pointer items-center
-                    rounded-lg border border-white bg-brand-dark-panel px-4.5
-                    py-2 font-inter text-sm font-normal text-white
-                    transition-all duration-200
-                    hover:bg-white/10
+                    global-chat-input box-border min-h-12 w-full rounded-lg
+                    border-none bg-brand-section py-3.5 pr-12.5 pl-3.75
+                    font-inter text-base font-normal text-white
+                    transition-[border-color] duration-200 outline-none
+                  "
+                  placeholder="Ask me anything"
+                  value={draft}
+                  disabled={isLoading}
+                  onChange={e => setDraft(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { void sendFreeForm(); } }}
+                />
+                <button
+                  onClick={() => { void sendFreeForm(); }}
+                  disabled={isLoading || !draft.trim()}
+                  aria-label="Send"
+                  className="
+                    global-chat-send-btn absolute right-2 flex size-9 shrink-0
+                    cursor-pointer items-center justify-center rounded-md
+                    border-none bg-[#7B99C9] text-base text-black
+                    transition-[background-color] duration-200
                   "
                 >
-                  Try another analogy
+                  <MdArrowUpward size={20} />
                 </button>
               </div>
-            )}
-          </div>
-
-          <div className="mt-6.25 shrink-0 bg-brand-dark-panel px-5 py-3.75">
-            <div className="relative flex items-center">
-              <input
-                ref={inputRef}
-                className="
-                  global-chat-input box-border min-h-12 w-full rounded-lg
-                  border-none bg-brand-section py-3.5 pr-12.5 pl-3.75 font-inter
-                  text-base font-normal text-white transition-[border-color]
-                  duration-200 outline-none
-                "
-                placeholder="Ask me anything"
-                value={draft}
-                disabled={isLoading}
-                onChange={e => setDraft(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { void sendFreeForm(); } }}
-              />
-              <button
-                onClick={() => { void sendFreeForm(); }}
-                disabled={isLoading || !draft.trim()}
-                aria-label="Send"
-                className="
-                  global-chat-send-btn absolute right-2 flex size-9 shrink-0
-                  cursor-pointer items-center justify-center rounded-md
-                  border-none bg-[#7B99C9] text-base text-black
-                  transition-[background-color] duration-200
-                "
-              >
-                <MdArrowUpward size={20} />
-              </button>
             </div>
-          </div>
-        </>
-      )}
-    </div>
+          </>
+        )}
+      </div>
+    </aside>
   );
 };
 

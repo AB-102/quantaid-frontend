@@ -1,23 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '@/api';
 import type { Question } from '@/types/quiz';
-import type { LessonContent, ParagraphItem } from '@/types/lesson';
-import type { Course, CompletedQuiz } from '@/types/course';
-import lesson0Img from '@/assets/lessonIcons/lesson-0.svg';
-import lesson1Img from '@/assets/lessonIcons/lesson-1.svg';
-import lesson2Img from '@/assets/lessonIcons/lesson-2.svg';
-
-interface DashboardSection {
-  id: string;
-  title: string;
-  order: number;
-  courses: number[];
-}
-
-interface DashboardConfig {
-  sections: DashboardSection[];
-  courses: Course[];
-}
+import type { ContentBlock, LessonContent } from '@/types/lesson';
+import type { CompletedQuiz, Course, DashboardConfig, DashboardSection } from '@/types/course';
+import { courseImageSrc } from '@/constants/courseImages';
 
 interface UseDashboardDataOptions {
   currentLesson: number | null;
@@ -54,7 +40,6 @@ export function useDashboardData({ currentLesson }: UseDashboardDataOptions): Us
   const [userPicture, setUserPicture] = useState('');
   const [isLoadingProgress, setIsLoadingProgress] = useState(true);
   const [completedQuizzes, setCompletedQuizzes] = useState<CompletedQuiz[]>([]);
-  const [, setUnlocked] = useState<number[]>([]);
   const [hasViewedFirstLesson, setHasViewedFirstLesson] = useState(false);
 
   // API lesson data for current lesson
@@ -76,18 +61,10 @@ export function useDashboardData({ currentLesson }: UseDashboardDataOptions): Us
           setApiQuiz(data.quiz);
         }
         if (data.blocks) {
-          const blocks: Array<{ type: string; text: string }> = data.blocks;
-          const paragraphs: (string | ParagraphItem)[] = blocks
-            .filter((b) => b.type !== 'image')
-            .map((b) => {
-              if (b.type === 'paragraph') return b.text;
-              const t = b.type;
-              if (t === 'heading' || t === 'subheading') return { text: b.text, type: t };
-              return b.text;
-            });
+          const blocks: ContentBlock[] = data.blocks;
           setApiLessonContent({
             title: data.title,
-            paragraphs,
+            blocks,
             interactiveTerms: data.interactiveTerms || {},
           });
         }
@@ -105,10 +82,9 @@ export function useDashboardData({ currentLesson }: UseDashboardDataOptions): Us
       .then(res => res.data)
       .then(data => {
         if (cancelled || !data) return;
-        const imageMap: Record<string, string> = { 'lesson-0': lesson0Img, 'lesson-1': lesson1Img, 'lesson-2': lesson2Img };
         const mappedCourses = (data.courses || []).map((c: Course) => ({
           ...c,
-          image: imageMap[c.image] || lesson0Img,
+          image: courseImageSrc(c.image),
         }));
         setDashboardConfig({ sections: data.sections || [], courses: mappedCourses });
       })
@@ -116,8 +92,8 @@ export function useDashboardData({ currentLesson }: UseDashboardDataOptions): Us
     return () => { cancelled = true; };
   }, []);
 
-  const activeCourses: Course[] = dashboardConfig?.courses ?? [];
-  const activeSections: DashboardSection[] = dashboardConfig?.sections ?? [];
+  const activeCourses: Course[] = useMemo(() => dashboardConfig?.courses ?? [], [dashboardConfig]);
+  const activeSections: DashboardSection[] = useMemo(() => dashboardConfig?.sections ?? [], [dashboardConfig]);
 
   // Fetch user progress
   const fetchUserProgress = useCallback(async () => {
@@ -127,7 +103,6 @@ export function useDashboardData({ currentLesson }: UseDashboardDataOptions): Us
       const response = await api.get('/me/progress');
       const data = response.data;
       console.log("Progress data received:", data);
-      setUnlocked(data.unlockedLevels || [0]);
       setCompletedQuizzes(data.completedQuizzes || []);
       setHasViewedFirstLesson(data.hasViewedFirstLesson || false);
       if (data.email) setUserEmail(data.email);
@@ -135,7 +110,6 @@ export function useDashboardData({ currentLesson }: UseDashboardDataOptions): Us
       if (data.picture) setUserPicture(data.picture);
     } catch (error) {
       console.error('Failed to fetch user progress:', error);
-      setUnlocked([0]);
       setCompletedQuizzes([]);
       setHasViewedFirstLesson(false);
     } finally {
@@ -179,12 +153,20 @@ export function useDashboardData({ currentLesson }: UseDashboardDataOptions): Us
     return Math.round((completedImplementedTopics / implementedTopics) * 100);
   }, [completedQuizzes, activeCourses]);
 
+  // Courses unlock in the order students see them (sections by order, then each section's course list): a course
+  // opens once the nearest earlier course with a published topic is complete. Courses with nothing published yet
+  // don't hold the next one back.
   const isCourseUnlocked = useCallback((courseId: number): boolean => {
-    if (courseId === 0) return true;
-    const previousCourse = activeCourses.find(c => c.id === courseId - 1);
-    if (!previousCourse) return false;
-    return getCourseProgress(courseId - 1) === 100;
-  }, [getCourseProgress, activeCourses]);
+    const orderedCourseIds = [...activeSections].sort((a, b) => a.order - b.order).flatMap(s => s.courses);
+    const position = orderedCourseIds.indexOf(courseId);
+    if (position === -1) return false;
+    for (let i = position - 1; i >= 0; i--) {
+      const previous = activeCourses.find(c => c.id === orderedCourseIds[i]);
+      const hasPublishedTopic = previous?.concepts.some(concept => concept.topics.some(t => t.implemented ?? true));
+      if (previous && hasPublishedTopic) return getCourseProgress(previous.id) === 100;
+    }
+    return true;
+  }, [getCourseProgress, activeCourses, activeSections]);
 
   const isTopicUnlocked = useCallback((topicId: number): boolean => {
     let topicImplemented = true;

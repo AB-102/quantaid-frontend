@@ -30,7 +30,8 @@ export interface UseDashboardLayoutReturn {
 export function useDashboardLayout(): UseDashboardLayoutReturn {
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   const [chatOpen, setChatOpen] = useState(false);
-  const [chatWidth, setChatWidth] = useState(0);
+  // The chat panel's width, kept while it's closed so it reopens the same size however it's opened
+  const [chatWidth, setChatWidth] = useState(CHAT_DEFAULT_WIDTH);
   const [isChatResizing, setIsChatResizing] = useState(false);
   const [isWindowResizing, setIsWindowResizing] = useState(false);
 
@@ -89,9 +90,8 @@ export function useDashboardLayout(): UseDashboardLayoutReturn {
   }, []);
 
   const handleChatToggle = useCallback(() => {
-    setChatWidth(chatOpen ? 0 : CHAT_DEFAULT_WIDTH);
-    setChatOpen(!chatOpen);
-  }, [chatOpen]);
+    setChatOpen(open => !open);
+  }, []);
 
   return {
     sidebarCollapsed,

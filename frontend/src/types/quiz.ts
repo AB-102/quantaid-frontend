@@ -5,13 +5,10 @@ export interface Question {
   options: string[];
   correctAnswer: number;
   explanation?: string;
-  lessonContentIndices?: number[];
+  // Labels (block ids) of the lesson content "Review lesson content" shows for this question
+  lessonBlockIds?: string[];
 }
 
 export interface AllQuizData {
   [courseId: number]: Question[];
-}
-
-export interface QuestionWithLesson extends Question {
-  lessonContentIndices?: number[];
 }

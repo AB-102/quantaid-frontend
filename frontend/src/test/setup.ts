@@ -42,12 +42,18 @@ window.getSelection = vi.fn().mockReturnValue({
 Element.prototype.scrollTo = vi.fn()
 window.scrollTo = vi.fn()
 
-// Mock IntersectionObserver (not available in jsdom)
-window.IntersectionObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
+// Mock IntersectionObserver (not available in jsdom). A class, since code like CodeMirror constructs it with new.
+class MockIntersectionObserver {
+  root = null
+  rootMargin = ''
+  scrollMargin = ''
+  thresholds = []
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+  takeRecords = () => []
+}
+window.IntersectionObserver = MockIntersectionObserver
 
 // Mock ResizeObserver (not available in jsdom)
 class MockResizeObserver {

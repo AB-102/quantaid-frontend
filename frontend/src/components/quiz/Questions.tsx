@@ -2,6 +2,7 @@
 
 import React from 'react';
 import type { Question } from '@/types/quiz';
+import LessonText from '../common/LessonText';
 
 interface QuestionsProps {
   currentIndex: number;
@@ -51,7 +52,7 @@ const Questions: React.FC<QuestionsProps> = ({
           aria-live="polite"
           aria-atomic="true"
         >
-          {question.question}
+          <LessonText markdown={question.question} inline />
         </h2>
       </div>
 
@@ -98,7 +99,7 @@ const Questions: React.FC<QuestionsProps> = ({
               aria-disabled={isDisabled}
               tabIndex={isDisabled ? -1 : 0}
             >
-              {opt}
+              <LessonText markdown={opt} inline />
             </button>
           );
         })}

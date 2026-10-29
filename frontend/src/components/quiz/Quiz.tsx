@@ -3,8 +3,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { IoCloseOutline } from "react-icons/io5";
 import { BsThreeDots } from "react-icons/bs";
-import type { Question, QuestionWithLesson } from '@/types/quiz';
+import type { Question } from '@/types/quiz';
 import type { LessonContent } from '@/types/lesson';
+import LessonBlocks from '../common/LessonBlocks';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useQuizSettings } from '@/hooks/useQuizSettings';
 import { useQuizTimer } from '@/hooks/useQuizTimer';
@@ -23,10 +24,6 @@ interface QuizProps {
   onExit: () => void;
   courseId: number;
   lessonContent?: LessonContent;
-}
-
-function isQuestionWithLesson(q: Question): q is QuestionWithLesson {
-  return 'lessonContentIndices' in q;
 }
 
 const TIME_LIMIT = 30;
@@ -275,29 +272,21 @@ const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, le
     setShowReviewConcept(false);
   };
 
-  // Get relevant lesson content for current question
+  // The lesson content the current question reviews: its labelled blocks, or the lesson's opening if it has none
   const getRelevantLessonContent = () => {
     if (!lessonContent || !questions[currentIndex]) return null;
 
-    const currentQuestion = questions[currentIndex];
-    const indices = isQuestionWithLesson(currentQuestion)
-      ? currentQuestion.lessonContentIndices
-      : undefined;
-
-    if (!indices || indices.length === 0) {
+    const labels = questions[currentIndex].lessonBlockIds ?? [];
+    if (labels.length === 0) {
       return {
         title: lessonContent.title,
-        paragraphs: lessonContent.paragraphs.slice(0, 3)
+        blocks: lessonContent.blocks.filter(block => block.type !== 'image').slice(0, 3),
       };
     }
 
-    const relevantParagraphs = indices
-      .filter(index => index < lessonContent.paragraphs.length)
-      .map(index => lessonContent.paragraphs[index]);
-
     return {
       title: lessonContent.title,
-      paragraphs: relevantParagraphs
+      blocks: labels.flatMap(label => lessonContent.blocks.filter(block => block.id === label)),
     };
   };
 
@@ -462,14 +451,10 @@ const Quiz: React.FC<QuizProps> = ({ questions, onComplete, onExit, courseId, le
                     return (
                       <>
                         <h2>{content.title}</h2>
-                        <div className="mb-7.5">
-                          {content.paragraphs.map((paragraph, index) => (
-                            <p key={index} className="
-                              mb-4 font-inter text-lg/relaxed font-normal
-                            ">
-                              {typeof paragraph === 'string' ? paragraph : paragraph.text}
-                            </p>
-                          ))}
+                        <div className="
+                          mb-7.5 font-inter text-lg/relaxed font-normal
+                        ">
+                          <LessonBlocks blocks={content.blocks} terms={lessonContent?.interactiveTerms} />
                         </div>
                         <div className="mt-7.5 text-left">
                           <button

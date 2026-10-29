@@ -117,36 +117,11 @@ body {
   overflow-y: auto;
 }
 
-/* ── Interactive word tooltip ────────────────────────────────────── */
-.interactive-word {
-  position: relative;
-  color: #566395;
-  text-decoration: underline dotted;
-  cursor: pointer;
-}
-
-.interactive-word:hover::after {
-  content: attr(data-term);
-  position: absolute;
-  top: 110%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #566395;
-  color: #E8E3F3;
-  padding: 8px 12px;
-  border-radius: 5px;
-  max-width: 200px;
-  text-align: center;
-  white-space: normal;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  z-index: 10;
-  font-size: 0.9em;
-}
-
 /* ── Focus rings (consolidated) ─────────────────────────────────── */
 button:focus-visible,
 [role="button"]:focus-visible,
-input:focus-visible,
+/* The header search shows focus by lightening its box instead (.search-container:focus-within) */
+input:not(.search-input):focus-visible,
 .quiz-option:focus-visible {
   outline: 3px solid #A4C5FF !important;
   outline-offset: 2px !important;
@@ -491,6 +466,57 @@ button.skip-button:hover:not(:disabled) {
   transition: none !important;
 }
 
+/* ── Chat panel: grows out of the Chat button ──────────────────────
+   GlobalChat sets --chat-button-* to the button's rectangle inside the panel. Opening flows from the button to the
+   panel's top-right corner, then pours down and to the left; closing gathers it back the same way. Without a
+   measured button, the panel spills in from the right edge. */
+#ai-chat-panel {
+  clip-path: inset(var(--chat-button-top, 0px) var(--chat-button-right, 0px)
+      var(--chat-button-bottom, 0px) var(--chat-button-left, 100%) round 8px);
+}
+
+#ai-chat-panel[data-open="true"] {
+  /* -20px on the left leaves room for the panel's shadow */
+  clip-path: inset(0px 0px 0px -20px round 0px);
+}
+
+@keyframes chat-spill-open {
+  0% {
+    clip-path: inset(var(--chat-button-top, 0px) var(--chat-button-right, 0px)
+        var(--chat-button-bottom, 0px) var(--chat-button-left, 100%) round 8px);
+    animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  /* Against the top-right corner, its leading corner rounded like spreading liquid */
+  40% {
+    clip-path: inset(0px 0px calc(var(--chat-button-bottom, 0px) * 0.8)
+        calc(var(--chat-button-left, 100%) * 0.6) round 0px 0px 0px 24px);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  100% {
+    clip-path: inset(0px 0px 0px -20px round 0px);
+  }
+}
+
+@keyframes chat-spill-close {
+  0% {
+    clip-path: inset(0px 0px 0px -20px round 0px);
+    animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  60% {
+    clip-path: inset(0px 0px calc(var(--chat-button-bottom, 0px) * 0.8)
+        calc(var(--chat-button-left, 100%) * 0.6) round 0px 0px 0px 24px);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  100% {
+    clip-path: inset(var(--chat-button-top, 0px) var(--chat-button-right, 0px)
+        var(--chat-button-bottom, 0px) var(--chat-button-left, 100%) round 8px);
+  }
+}
+
 /* Sidebar child element animation helpers */
 .sidebar-coordinated .nav-button span,
 .sidebar-coordinated .profile-button span,
@@ -566,6 +592,12 @@ button.skip-button:hover:not(:disabled) {
 
   .main-panel-coordinated {
     transition: all 0.1s ease !important;
+  }
+
+  /* The chat panel doesn't grow out of the Chat button; it only fades in and out */
+  #ai-chat-panel {
+    clip-path: none !important;
+    animation: none !important;
   }
 }
 

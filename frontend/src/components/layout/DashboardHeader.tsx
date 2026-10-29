@@ -8,6 +8,8 @@ interface DashboardHeaderProps {
   onSearchSubmit: (e: React.FormEvent) => void;
   view: 'dashboard' | 'course-detail' | 'lesson';
   quizOpen: boolean;
+  chatOpen: boolean;
+  chatButtonRef: React.RefObject<HTMLButtonElement>;
   onChatToggle: () => void;
   headerStyle: React.CSSProperties;
 }
@@ -18,6 +20,8 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   onSearchSubmit,
   view,
   quizOpen,
+  chatOpen,
+  chatButtonRef,
   onChatToggle,
   headerStyle,
 }) => {
@@ -54,17 +58,23 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       </form>
 
       <div className="flex items-center gap-3.75">
+        {/* Stays put. The chat panel grows out of it and shrinks back into it (see chatMorph.ts), covering it
+            while open, so it's hidden then: not clickable and not a Tab stop. */}
         {view === 'lesson' && !quizOpen && (
           <button
-            className="
+            ref={chatButtonRef}
+            className={`
               chat-button fixed top-[0.9rem] right-16 z-1900 flex h-auto
               cursor-pointer items-center justify-center gap-1.5 rounded-lg
               border-transparent bg-brand-search px-3.5 py-1.5 font-inter
-              text-base font-medium text-brand-gray transition-all duration-200
+              text-base font-medium text-brand-gray transition-colors
+              duration-200
               hover:bg-[#0B2F54]
-            "
+              ${chatOpen ? 'invisible' : ''}
+            `}
             onClick={onChatToggle}
-            aria-label="Toggle Chat"
+            aria-expanded={chatOpen}
+            aria-controls="ai-chat-panel"
           >
             <MdOutlinePerson size="1.5em" /> <span>Chat</span>
           </button>
