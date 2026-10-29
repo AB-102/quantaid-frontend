@@ -37,6 +37,19 @@ describe('Login', () => {
     renderWithProviders(<Login />)
     expect(await screen.findByRole('button', { name: /rice student/i })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /google/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('explains why Rice sign-in sent the user back', async () => {
+    mockAuthConfig({ isRiceDeployment: true, googleClientId: null })
+    renderWithProviders(<Login />, { route: '/?rice_error=conflict' })
+    expect(await screen.findByRole('alert')).toHaveTextContent(/already linked to a different rice account/i)
+  })
+
+  it('shows the generic Rice message for a code it does not know', async () => {
+    mockAuthConfig({ isRiceDeployment: true, googleClientId: null })
+    renderWithProviders(<Login />, { route: '/?rice_error=<script>' })
+    expect(await screen.findByRole('alert')).toHaveTextContent("Rice sign-in didn't finish. Please try again.")
   })
 
   it('shows a disabled placeholder while the sign-in config loads', () => {

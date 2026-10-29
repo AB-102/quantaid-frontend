@@ -7,7 +7,7 @@ import LoginGraphic from '@/assets/login-graphic.svg';
 import QuantaidLogo from '@/assets/quantaid-logo.svg';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import { useEffect, useState, type MouseEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 // GET /api/auth/config: a Rice deployment signs in with Rice SSO only, any other deployment with Google
 type AuthConfig =
@@ -52,8 +52,8 @@ const GoogleSignInButton = ({ label, onAccessToken }: { label: string; onAccessT
   );
 };
 
-// Rice SSO is a full-page redirect through the backend (OIDC authorization code flow, GitHub #17).
-// Until that's built, the backend answers with a "not yet configured" error.
+// Rice SSO is a full-page redirect through the backend (OIDC authorization code flow). The backend signs the user
+// in and sends the browser on into the app, or back to this page with ?rice_error= if sign-in didn't finish.
 const RiceSignInButton = () => (
   <button
     type="button"
@@ -65,6 +65,13 @@ const RiceSignInButton = () => (
     I'm a Rice Student
   </button>
 );
+
+// The backend only ever sends these codes, never Rice's own error text
+const riceErrorMessage = (code: string) => {
+  if (code === 'disabled') return 'This account has been disabled. Contact the Quantaid team if you think this is a mistake.';
+  if (code === 'conflict') return 'This email is already linked to a different Rice account. Contact the Quantaid team.';
+  return "Rice sign-in didn't finish. Please try again.";
+};
 
 // Holds the sign-in button's place while GET /api/auth/config loads, so the page doesn't shift when the real button arrives
 const SignInButtonPlaceholder = () => (
@@ -192,6 +199,8 @@ const EmailPasswordPlaceholder = ({ isSignUpMode }: { isSignUpMode: boolean }) =
 const Login = () => {
   const navigate = useNavigate();
   const { login: authLogin } = useAuth();
+  const [searchParams] = useSearchParams();
+  const riceError = searchParams.get('rice_error');
 
   // new users start in sign-up mode, returning users start in login mode
   const [isSignUpMode, setIsSignUpMode] = useState(() => localStorage.getItem('loggedInUserEmail') === null);
@@ -306,7 +315,16 @@ const Login = () => {
             {isConfigLoading && <SignInButtonPlaceholder />}
 
             {authConfig !== null && (authConfig.isRiceDeployment ? (
-              <RiceSignInButton />
+              <>
+                <RiceSignInButton />
+                {riceError !== null && (
+                  <p role="alert" className="
+                    mt-4 text-center text-base text-[#F1E0E0]
+                  ">
+                    {riceErrorMessage(riceError)}
+                  </p>
+                )}
+              </>
             ) : (
               <GoogleOAuthProvider clientId={authConfig.googleClientId}>
                 <GoogleSignInButton
