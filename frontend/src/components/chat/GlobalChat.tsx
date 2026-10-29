@@ -1,8 +1,10 @@
 // src/components/GlobalChat.tsx
 
+import axios from 'axios';
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { MdClose, MdArrowUpward, MdHistory, MdDeleteOutline, MdArrowBack, MdOutlinePerson } from "react-icons/md";
 import api from '@/api';
+import LessonText from '../common/LessonText';
 import {
   BUTTON_COLOR, CONTENT_FADE_IN_DELAY_MS, CONTENT_FADE_OUT_MS, FACE_FADE_IN_MS, FACE_FADE_OUT_MS, MORPH_CLOSE_MS,
   MORPH_EASING, MORPH_OPEN_MS, PANEL_COLOR,
@@ -10,12 +12,24 @@ import {
 
 const MAX_STORED_MESSAGES = 50;
 const STORAGE_PREFIX = 'quantaid:chat:';
+// The footer's count of requests left turns amber at this many
+const LOW_REMAINING_REQUESTS = 5;
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   type?: 'explanation' | 'analogy' | 'general';
 }
+
+// GET /me/ai-usage: today's AI requests on Quantaid's key. Admins have no limit, so `limit` is null for them.
+interface AiUsage {
+  used: number;
+  limit: number | null;
+  resetsAt: string | null;
+}
+
+// Why the last AI request failed. Shown in the conversation, but never saved with it or sent as history.
+type RequestError = 'limit' | 'unavailable';
 
 interface StoredSession {
   id: string;
@@ -80,6 +94,11 @@ function capMessages(messages: ChatMessage[]): ChatMessage[] {
     : messages;
 }
 
+// The daily count resets at midnight UTC; this shows when that is in the student's own time
+function formatResetTime(resetsAt: string): string {
+  return new Date(resetsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 const GlobalChat: React.FC<Props> = ({
   isOpen,
   onClose,
@@ -99,6 +118,8 @@ const GlobalChat: React.FC<Props> = ({
   const [showHistory, setShowHistory] = useState(false);
   const [sessions, setSessions] = useState<StoredSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string>('');
+  const [usage, setUsage] = useState<AiUsage | null>(null);
+  const [requestError, setRequestError] = useState<RequestError | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const lastKey = useRef<string>('');
@@ -125,8 +146,21 @@ const GlobalChat: React.FC<Props> = ({
     setMessages([]);
     setLastTopic(null);
     setShowHistory(false);
+    setRequestError(null);
     lastKey.current = '';
   }, [courseId, newSessionId]);
+
+  // Today's count for the footer. If it can't be fetched, the footer keeps the count it had, if any.
+  const refreshUsage = useCallback(() => {
+    void api
+      .get<AiUsage>('/me/ai-usage')
+      .then(res => setUsage(res.data))
+      .catch(() => { /* keep the last count */ });
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) refreshUsage();
+  }, [isOpen, refreshUsage]);
 
   // Persist current session to localStorage whenever messages change
   useEffect(() => {
@@ -282,8 +316,15 @@ const GlobalChat: React.FC<Props> = ({
   const append = (msg: ChatMessage | ChatMessage[]) =>
     setMessages(prev => prev.concat(msg));
 
+  // Each request appends the user's message first; a failed request takes it back out, since it got no answer
+  const handleRequestError = (err: unknown) => {
+    setMessages(prev => prev.slice(0, -1));
+    setRequestError(axios.isAxiosError(err) && err.response?.status === 429 ? 'limit' : 'unavailable');
+  };
+
   const requestExplanation = async (text: string) => {
     append({ role: 'user', content: 'Explain', type: 'explanation' });
+    setRequestError(null);
 
     setIsLoading(true);
     try {
@@ -296,14 +337,16 @@ const GlobalChat: React.FC<Props> = ({
       setLastTopic(null);
     } catch (err) {
       console.error('Explanation error:', err);
-      alert(`Unable to explain text: ${err instanceof Error ? err.message : String(err)}`);
+      handleRequestError(err);
     } finally {
       setIsLoading(false);
+      refreshUsage();
     }
   };
 
   const requestAnalogy = async (text: string) => {
     append({ role: 'user', content: 'View Analogy', type: 'analogy' });
+    setRequestError(null);
 
     setIsLoading(true);
     try {
@@ -316,9 +359,10 @@ const GlobalChat: React.FC<Props> = ({
       setLastTopic(text);
     } catch (err) {
       console.error('Analogy error:', err);
-      alert(`Unable to generate analogy: ${err instanceof Error ? err.message : String(err)}`);
+      handleRequestError(err);
     } finally {
       setIsLoading(false);
+      refreshUsage();
     }
   };
 
@@ -326,6 +370,7 @@ const GlobalChat: React.FC<Props> = ({
     if (!lastTopic) return;
 
     append({ role: 'user', content: 'Try another analogy', type: 'analogy' });
+    setRequestError(null);
 
     setIsLoading(true);
     try {
@@ -337,9 +382,10 @@ const GlobalChat: React.FC<Props> = ({
       append({ role: 'assistant', content: analogy, type: 'analogy' });
     } catch (err) {
       console.error('Analogy error:', err);
-      alert(`Unable to generate analogy: ${err instanceof Error ? err.message : String(err)}`);
+      handleRequestError(err);
     } finally {
       setIsLoading(false);
+      refreshUsage();
     }
   };
 
@@ -350,6 +396,7 @@ const GlobalChat: React.FC<Props> = ({
 
     const newUserMessage: ChatMessage = { role: 'user', content: userMsg, type: 'general' };
     append(newUserMessage);
+    setRequestError(null);
 
     setIsLoading(true);
     try {
@@ -362,9 +409,12 @@ const GlobalChat: React.FC<Props> = ({
       setLastTopic(null);
     } catch (err) {
       console.error('Chat error:', err);
-      alert(`Chat error: ${err instanceof Error ? err.message : String(err)}`);
+      handleRequestError(err);
+      // Give the student their message back, so they don't have to type it again
+      setDraft(userMsg);
     } finally {
       setIsLoading(false);
+      refreshUsage();
     }
   };
 
@@ -380,6 +430,7 @@ const GlobalChat: React.FC<Props> = ({
     setMessages(session.messages);
     setLastTopic(session.lastTopic);
     setShowHistory(false);
+    setRequestError(null);
     lastKey.current = '';
   };
 
@@ -404,6 +455,7 @@ const GlobalChat: React.FC<Props> = ({
     setMessages([]);
     setLastTopic(null);
     setShowHistory(false);
+    setRequestError(null);
     lastKey.current = '';
   };
 
@@ -469,6 +521,13 @@ const GlobalChat: React.FC<Props> = ({
   const pastSessions = sessions
     .filter(s => s.id !== activeSessionId && s.messages.length > 0)
     .sort((a, b) => b.timestamp - a.timestamp);
+
+  // Requests left today on Quantaid's key: null while the count loads, and for admins, who have no limit
+  const limit = usage?.limit ?? null;
+  const remaining = usage && limit !== null ? Math.max(limit - usage.used, 0) : null;
+  const limitReached = remaining === 0;
+  const resetTime = usage !== null && usage.resetsAt !== null ? formatResetTime(usage.resetsAt) : '';
+  const footerColor = remaining !== null && remaining <= LOW_REMAINING_REQUESTS ? 'text-warn' : 'text-brand-cool';
 
   return (
     <aside
@@ -669,12 +728,27 @@ const GlobalChat: React.FC<Props> = ({
                     : `
                       max-w-full shrink-0 self-start border-none
                       bg-brand-dark-panel px-3.75 py-2.5 font-inter font-normal
-                      wrap-break-word whitespace-pre-wrap text-white
+                      wrap-break-word text-white
                     `
                   }>
-                    {m.content}
+                    {/* Replies are Markdown (lists, bold, math); the student's own messages stay as typed */}
+                    {m.role === 'assistant' ? <LessonText markdown={m.content} /> : m.content}
                   </div>
                 ))}
+
+                {requestError && (
+                  <div role="alert" className="
+                    max-w-full shrink-0 self-start rounded-lg border
+                    border-error-alt/60 bg-error-alt/10 px-3.75 py-2.5 font-inter
+                    text-sm font-normal text-white
+                  ">
+                    {requestError === 'limit' ? (
+                      <>You&apos;ve used all of today&apos;s AI requests.{resetTime && <> They reset at {resetTime}.</>}</>
+                    ) : (
+                      <>The AI service isn&apos;t available right now. Please try again.</>
+                    )}
+                  </div>
+                )}
 
                 {isLoading && (
                   <div className="
@@ -689,7 +763,7 @@ const GlobalChat: React.FC<Props> = ({
                   </div>
                 )}
 
-                {messages.length === 0 && !isLoading && (
+                {messages.length === 0 && !isLoading && !requestError && (
                   <div className="
                     shrink-0 p-7.5 text-center text-[#f8f9fa] opacity-70
                   ">
@@ -697,11 +771,16 @@ const GlobalChat: React.FC<Props> = ({
                   </div>
                 )}
               </div>
+            </div>
 
+            <div className="
+              relative mt-6.25 shrink-0 bg-brand-dark-panel px-5 py-3.75
+            ">
+              {/* Floats just above the input area, over the conversation, whatever the input area's height */}
               {!isLoading && lastTopic && messages.slice(-1)[0]?.type === 'analogy' && (
                 <div className="
-                  pointer-events-none absolute inset-x-0 bottom-15 flex
-                  justify-start px-5 py-3.75
+                  pointer-events-none absolute inset-x-0 bottom-full flex
+                  justify-start px-5
                 ">
                   <button
                     onClick={() => { void tryAnotherAnalogy(); }}
@@ -717,9 +796,6 @@ const GlobalChat: React.FC<Props> = ({
                   </button>
                 </div>
               )}
-            </div>
-
-            <div className="mt-6.25 shrink-0 bg-brand-dark-panel px-5 py-3.75">
               <div className="relative flex items-center">
                 <input
                   ref={inputRef}
@@ -729,15 +805,15 @@ const GlobalChat: React.FC<Props> = ({
                     font-inter text-base font-normal text-white
                     transition-[border-color] duration-200 outline-none
                   "
-                  placeholder="Ask me anything"
+                  placeholder={limitReached ? `Daily limit reached · resets at ${resetTime}` : 'Ask me anything'}
                   value={draft}
-                  disabled={isLoading}
+                  disabled={isLoading || limitReached}
                   onChange={e => setDraft(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { void sendFreeForm(); } }}
                 />
                 <button
                   onClick={() => { void sendFreeForm(); }}
-                  disabled={isLoading || !draft.trim()}
+                  disabled={isLoading || limitReached || !draft.trim()}
                   aria-label="Send"
                   className="
                     global-chat-send-btn absolute right-2 flex size-9 shrink-0
@@ -749,6 +825,12 @@ const GlobalChat: React.FC<Props> = ({
                   <MdArrowUpward size={20} />
                 </button>
               </div>
+              <p className={`
+                mt-2 mb-0 text-center font-inter text-xs
+                ${footerColor}
+              `}>
+                AI can make mistakes.{remaining !== null && ` ${remaining} of ${limit} AI requests left today.`}
+              </p>
             </div>
           </>
         )}
