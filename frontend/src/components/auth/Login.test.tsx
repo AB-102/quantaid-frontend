@@ -52,6 +52,16 @@ describe('Login', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent("Rice sign-in didn't finish. Please try again.")
   })
 
+  it('explains on hover why the email and password fields are disabled', async () => {
+    mockAuthConfig({ isRiceDeployment: false, googleClientId: 'test-client-id' })
+    renderWithProviders(<Login />)
+    await screen.findByRole('button', { name: /google/i })
+    for (const control of [screen.getByLabelText('Email'), screen.getByLabelText('Password'), screen.getByRole('button', { name: /^(SIGN UP|LOG IN)$/ })]) {
+      expect(control).toBeDisabled()
+      expect(control).toHaveAttribute('title', "Email and password sign-in isn't available. Use the sign-in button above.")
+    }
+  })
+
   it('shows a disabled placeholder while the sign-in config loads', () => {
     mockBackendAsleep()
     renderWithProviders(<Login />)

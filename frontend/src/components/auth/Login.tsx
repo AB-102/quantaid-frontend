@@ -97,6 +97,8 @@ const SignInButtonPlaceholder = () => (
 // TODO: replace in the SSO-only redesign. Login went SSO-only for dual deployment (Rice/Google SSO) and
 // security, so the email/password flow was removed in frontend f2e66ed and backend b08df52. This is a
 // disabled, look-only copy of that form, kept so the page doesn't look half-empty until then.
+// Shown on hover over each disabled control. The button above is Google or Rice SSO, depending on the deployment.
+const placeholderHint = "Email and password sign-in isn't available. Use the sign-in button above.";
 const inputContainerClass = 'mb-6 text-left';
 const labelClass = 'mb-[0.3rem] block text-[1.3rem] text-[#F1E0E0]';
 const inputClass = `
@@ -118,7 +120,7 @@ const EmailPasswordPlaceholder = ({ isSignUpMode }: { isSignUpMode: boolean }) =
 
     <div className={inputContainerClass}>
       <label htmlFor="email-input" className={labelClass}>Email</label>
-      <input id="email-input" type="email" placeholder="Name@gmail.com" className={inputClass} />
+      <input id="email-input" type="email" placeholder="Name@gmail.com" className={inputClass} title={placeholderHint} />
     </div>
 
     {isSignUpMode && (
@@ -130,13 +132,13 @@ const EmailPasswordPlaceholder = ({ isSignUpMode }: { isSignUpMode: boolean }) =
         ">
           This name will appear on your profile
         </p>
-        <input id="name-input" type="text" placeholder="John/Jane Doe" className={inputClass} />
+        <input id="name-input" type="text" placeholder="John/Jane Doe" className={inputClass} title={placeholderHint} />
       </div>
     )}
 
     <div className={inputContainerClass}>
       <label htmlFor="password-input" className={labelClass}>Password</label>
-      <input id="password-input" type="password" placeholder="********" className={inputClass} />
+      <input id="password-input" type="password" placeholder="********" className={inputClass} title={placeholderHint} />
     </div>
 
     {/* Terms / privacy — sign-up mode only */}
@@ -173,6 +175,7 @@ const EmailPasswordPlaceholder = ({ isSignUpMode }: { isSignUpMode: boolean }) =
       <div className="mb-2 text-left">
         <button
           type="button"
+          title={placeholderHint}
           className="
             cursor-not-allowed p-0 font-inter text-[0.9rem] font-normal
             text-brand-focus underline
@@ -185,6 +188,7 @@ const EmailPasswordPlaceholder = ({ isSignUpMode }: { isSignUpMode: boolean }) =
 
     <button
       type="button"
+      title={placeholderHint}
       className="
         my-8 w-full cursor-not-allowed rounded-full bg-brand-blue-mid p-[1.2rem]
         font-inter text-[1.3rem] leading-[1.2] font-medium tracking-[-0.01em]
