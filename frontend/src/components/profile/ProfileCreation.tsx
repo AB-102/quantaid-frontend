@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/api';
-import welcomeVideo from '@/assets/welcome.mp4';
 import { stepConfigs, type FormData, type FormHandlers, type CommonProps } from './profileStepConfigs';
 import DefaultStep from './DefaultStep';
+import WelcomeVideoStep from './WelcomeVideoStep';
 
 const ProfileCreation: React.FC = () => {
   const [userId, setUserId] = useState<string | null>(null);
@@ -133,41 +133,9 @@ const ProfileCreation: React.FC = () => {
     handleSubmit,
   };
 
-  /** ------------------ VIDEO POPUP ------------------ **/
+  /** ------------------ WELCOME VIDEO ------------------ **/
   if (showVideoPopup) {
-    return (
-      <div className="
-        fixed inset-0 z-2000 flex flex-col items-center justify-center
-        bg-black/90 p-5
-      ">
-        <h2 className="
-          mb-5 font-inter text-[34px] font-normal tracking-[.02em] text-white
-        ">
-          Welcome to Quantaid!
-        </h2>
-        <video
-          width="80%"
-          autoPlay
-          playsInline
-          controls
-          onEnded={() => { void navigate('/map'); }}
-          className="rounded-lg"
-        >
-          <source src={welcomeVideo} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-        <button
-          onClick={() => { void navigate('/map'); }}
-          className="
-            skip-button mt-5 min-w-30 cursor-pointer rounded-xl border-none
-            bg-[#3D4C65] px-6 py-3 font-inter text-base font-medium text-white
-            transition-all duration-200
-          "
-        >
-          Continue
-        </button>
-      </div>
-    );
+    return <WelcomeVideoStep totalSteps={totalSteps} onFinish={() => { void navigate('/map'); }} />;
   }
 
   // Render current step
