@@ -93,15 +93,14 @@ jobs:
       - run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
       - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
 
-  # Pushes the image the Docker-route selfhost pulls (quantaid-infra/selfhost/docker).
-  # Needs the staging deploys, so production only gets what staging already got.
-  # VITE_BACKEND_URL is baked in at build time, so it comes from the production-public environment.
+  # Pushes the image self-hosted deployments run (quantaid-infra/selfhost/docker). A release later retags it
+  # without rebuilding (release.yml). Needs the staging deploys, so a release only gets what staging already got.
+  # Built without VITE_BACKEND_URL, so the app calls /api on whatever site serves it (src/api.ts).
   # defaults.run.working-directory only applies to run: steps, hence context: frontend.
   publish-image:
     needs: [deploy-staging-public, deploy-staging-rice]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    environment: production-public
     permissions:
       contents: read
       packages: write
@@ -125,5 +124,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            VITE_BACKEND_URL=${{ vars.VITE_BACKEND_URL }}

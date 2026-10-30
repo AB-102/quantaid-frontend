@@ -1,0 +1,46 @@
+name: Release
+
+# Pushing a vYYYY.M.N tag publishes that commit as a release.
+# Nothing is rebuilt: the image CI already built and staging already ran is retagged with the version.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    env:
+      IMAGE: ghcr.io/ab-102/quantaid-frontend
+    steps:
+      - name: Check the tag is vYYYY.M.N
+        run: echo "$GITHUB_REF_NAME" | grep -Eq '^v[0-9]{4}\.[1-9][0-9]?\.[0-9]+$'
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # The sha- image only exists for a main commit whose CI run and staging deploys passed,
+      # so tagging any other commit fails here
+      - name: Promote the image that passed CI
+        run: docker buildx imagetools create -t "$IMAGE:${GITHUB_REF_NAME#v}" "$IMAGE:sha-${GITHUB_SHA::7}"
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --generate-notes
+      # Route A's frontend VM serves these files without Docker
+      - name: Attach the built site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          docker create --name site "$IMAGE:${GITHUB_REF_NAME#v}"
+          docker cp site:/usr/share/nginx/html dist
+          tar -czf quantaid-frontend-dist.tar.gz -C dist .
+          sha256sum quantaid-frontend-dist.tar.gz > quantaid-frontend-dist.tar.gz.sha256
+          gh release upload "$GITHUB_REF_NAME" quantaid-frontend-dist.tar.gz quantaid-frontend-dist.tar.gz.sha256 \
+            --repo "$GITHUB_REPOSITORY"

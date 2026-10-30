@@ -4,7 +4,9 @@
 
 import axios from 'axios';
 
-export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+// Unset in the image the self-hosted deployments run: the API is then on the page's own origin, at /api.
+// Local dev (.env) and the Vercel staging sites set it to their backend's origin.
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ?? '';
 
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,

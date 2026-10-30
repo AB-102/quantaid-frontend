@@ -21,6 +21,7 @@ import Login from './components/auth/Login';
 import ProfileCreation from './components/profile/ProfileCreation';
 import Dashboard from './components/dashboard/Dashboard';
 import Quiz from './components/quiz/Quiz';
+import UpdateBanner from './components/common/UpdateBanner';
 import api from './api';
 import type { Question } from './types/quiz';
 import { AuthProvider, ProtectedRoute, AdminRoute, AdminToggle } from './AuthContext';
@@ -78,6 +79,7 @@ const App: React.FC = () => {
             <Route path="*" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           </Routes>
           <AdminToggle />
+          <UpdateBanner />
         </div>
       </AuthProvider>
     </Router>

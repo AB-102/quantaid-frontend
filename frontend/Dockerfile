@@ -1,5 +1,5 @@
-# Production image for the Docker-route selfhost (quantaid-infra/selfhost/docker).
-# VITE_BACKEND_URL is baked in at build time; CI passes it as a build arg.
+# Production image for self-hosted deployments (quantaid-infra/selfhost/docker).
+# VITE_BACKEND_URL is optional and baked in at build time. CI leaves it unset, so the app calls /api on its own site.
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
